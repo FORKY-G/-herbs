@@ -156,11 +156,11 @@
     <script src="js/ui-control.js"></script>   
 
     <script>
-        <script>
+        // [1] 사이드바 및 버튼 요소 가져오기
         const sidebar = document.getElementById('controls');
         const toggleBtn = document.getElementById('toggle-sidebar');
 
-        // 메뉴 열기/닫기 공용 함수
+        // [2] 메뉴 열기/닫기 함수
         function toggleSidebar() {
             sidebar.classList.toggle('active');
             
@@ -171,31 +171,36 @@
             }
         }
 
-        // 1. 버튼 클릭 시 토글
+        // [3] 버튼 클릭 시 메뉴 토글
         toggleBtn.addEventListener('click', function(e) {
-            e.stopPropagation(); // 버튼 클릭 시 지도 클릭 이벤트가 동시에 일어나는 것 방지
+            e.stopPropagation(); // 지도 클릭 이벤트가 동시에 발생하는 것 방지
             toggleSidebar();
         });
 
-        // 2. [추가] 지도 클릭 시 메뉴가 열려있다면 자동으로 닫기
-        map.on('click', function() {
-            if (sidebar.classList.contains('active')) {
-                sidebar.classList.remove('active');
-                toggleBtn.innerText = '▼ 한월메뉴 열기';
-            }
-        });
+        // [4] 지도 클릭 시 메뉴 자동 닫기 (다겸님 요청 사항)
+        if (typeof map !== 'undefined') {
+            map.on('click', function() {
+                if (sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    toggleBtn.innerText = '▼ 한월메뉴 열기';
+                }
+            });
+        }
 
-        // 3. 메뉴 창 내부를 클릭할 때는 닫히지 않게 보호
+        // [5] 메뉴 내부 클릭 시 닫힘 방지
         sidebar.addEventListener('click', function(e) {
             e.stopPropagation(); 
         });
 
-        // 사냥터 아코디언 로직 유지
-        document.getElementById('hunt-accordion-btn').addEventListener('click', function() {
-            const content = document.getElementById('hunt-accordion-content');
-            content.classList.toggle('active');
-            this.querySelector('span').innerText = content.classList.contains('active') ? '▲' : '▼';
-        });
+        // [6] 사냥터 아코디언 토글 (기존 로직)
+        const accordionBtn = document.getElementById('hunt-accordion-btn');
+        if (accordionBtn) {
+            accordionBtn.addEventListener('click', function() {
+                const content = document.getElementById('hunt-accordion-content');
+                content.classList.toggle('active');
+                this.querySelector('span').innerText = content.classList.contains('active') ? '▲' : '▼';
+            });
+        }
     </script>
 </body>
 </html>
