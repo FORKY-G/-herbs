@@ -175,10 +175,18 @@ redItems.forEach((item) => {
 });
 });
 
-// 8. 동상 마커 생성 (비석과 동일한 stoneIcon 사용)
+// 8. 공용 아이콘 정의 (동상과 비석에서 함께 사용)
+// 정의를 먼저 해야 아래에서 에러가 나지 않습니다.
+const stoneIcon = L.icon({
+    iconUrl: 'images/stone.png',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -10]
+});
+
+// 9. 동상 마커 생성
 statues.forEach((st) => {
     const pos = mcToPx(st.x, st.z);
-    // compassIcon 대신 stoneIcon을 사용합니다.
     const marker = L.marker(pos, { icon: stoneIcon }).addTo(map);
 
     const popupContent = `
@@ -202,14 +210,7 @@ statues.forEach((st) => {
     marker.bindPopup(popupContent, { autoPan: false, keepInView: true });
 });
 
-// 9. 비석(산) 마커 생성 (stone.png 사용)
-const stoneIcon = L.icon({
-    iconUrl: 'images/stone.png',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -10]
-});
-
+// 10. 비석(산) 마커 생성
 mountains.forEach((mt) => {
     const pos = mcToPx(mt.x, mt.z);
     const marker = L.marker(pos, { icon: stoneIcon }).addTo(map);
@@ -228,6 +229,8 @@ mountains.forEach((mt) => {
     `;
     marker.bindPopup(popupContent, { autoPan: false, keepInView: true });
 });
+
+// ★ 파일 맨 마지막에 '잘림 방지 보정 스크립트'가 있는지 꼭 확인하세요!
 
 map.on('popupopen', function(e) {
     const popup = e.popup;
