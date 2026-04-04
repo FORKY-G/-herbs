@@ -49,11 +49,28 @@
     .leaflet-popup-close-button {
         display: none !important;
     }
+
+    /* 복사 완료 알림 스타일 */
+#copy-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 16px;
+    border: 1px solid #ffffff;
+    font-size: 14px;
+    z-index: 10000;
+    display: none; /* 평소엔 숨김 */
+}
+    
 </style>
 </head>
 <body>
 
     <div id="map"></div>
+    <div id="copy-toast">복사 완료!</div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     
