@@ -371,6 +371,119 @@ const bindCheckbox = (id, layer) => {
     }
 };
 
+// [16] 통합 검색 시스템 (엔터키 및 검색 결과 자동 선택 포함)
+const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+
+// 현재 검색된 결과들을 담아둘 임시 배열
+let currentFilteredData = [];
+
+searchInput.addEventListener('input', function() {
+    const query = this.value.trim().toLowerCase();
+    searchResults.innerHTML = '';
+    currentFilteredData = []; // 검색할 때마다 초기화
+    
+    if (!query) {
+        searchResults.style.display = 'none';
+        return;
+    }
+
+    // 1. 데이터 수집 (십이지신, 광산, 사냥터, NPC 등)
+    // 십이지신
+    animals.forEach(ani => {
+        if (ani.name.toLowerCase().includes(query)) {
+            currentFilteredData.push({ name: ani.name, category: '십이지신', x: ani.mcX, z: ani.mcZ, type: 'animal' });
+        }
+    });
+
+    // 광산 (숫자 완전 일치)
+    mines.forEach(mine => {
+        if (mine.n.toString() === query) {
+            currentFilteredData.push({ name: `${mine.n}번 광산`, category: '광산', x: mine.x, z: mine.z, type: 'mine' });
+        }
+    });
+
+    // 사냥터 (이름 또는 몬스터 포함)
+    huntingGrounds.forEach(area => {
+        if (area.name.toLowerCase().includes(query) || area.monsters.toLowerCase().includes(query)) {
+            currentFilteredData.push({ name: area.name, category: `사냥터 (${area.monsters})`, x: area.x, z: area.z, type: 'hunting', areaName: area.name });
+        }
+    });
+
+    // 기타 (NPC, 적환단 등)
+    const extras = [
+        { data: npcData, cat: 'NPC' },
+        { data: redItems, cat: '적환단' },
+        { data: statues, cat: '동상/산' },
+        { data: mountains, cat: '동상/산' },
+        { data: potItems, cat: '탐색' },
+        { data: mysteryBoxes, cat: '의문의 상자' }
+    ];
+
+    extras.forEach(group => {
+        group.data.forEach(item => {
+            const name = item.name || (item.file ? "적환단" : group.cat);
+            if (name.toLowerCase().includes(query)) {
+                currentFilteredData.push({ name: name, category: group.cat, x: item.x, z: item.z, type: 'extra' });
+            }
+        });
+    });
+
+    // 결과 목록 표시
+    if (currentFilteredData.length > 0) {
+        searchResults.style.display = 'block';
+        currentFilteredData.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'search-result-item';
+            div.innerHTML = `<span class="category">[${item.category}]</span> ${item.name}`;
+            div.onclick = () => selectSearchResult(item);
+            searchResults.appendChild(div);
+        });
+    } else {
+        searchResults.style.display = 'none';
+    }
+});
+
+// [추가] 엔터키 이벤트 리스너
+searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        if (currentFilteredData.length > 0) {
+            // 결과가 있으면 가장 첫 번째 항목을 자동으로 선택
+            selectSearchResult(currentFilteredData[0]);
+        }
+    }
+});
+
+// 결과 선택 시 실행되는 공통 함수
+function selectSearchResult(item) {
+    moveToLocation(item);
+    searchResults.style.display = 'none';
+    searchInput.value = item.name;
+    searchInput.blur(); // 입력창 포커스 해제
+}
+
+// 위치 이동 및 팝업 표시 함수 (기존 유지)
+function moveToLocation(target) {
+    const targetPos = mcToPx(target.x, target.z);
+    map.flyTo(targetPos, 5, { animate: true, duration: 1.0 });
+
+    setTimeout(() => {
+        L.popup({ autoPan: false })
+            .setLatLng(targetPos)
+            .setContent(`<div style="text-align:center; font-weight:800;">[${target.category}]<br>${target.name}</div>`)
+            .openOn(map);
+            
+        if (target.type === 'hunting') {
+            const chk = document.getElementById(`hunt-${target.areaName}`);
+            if (chk) {
+                chk.checked = true;
+                layers.hunting[target.areaName].addTo(map);
+                layers.huntingMarkers[target.areaName].addTo(map);
+            }
+        }
+    }, 1000);
+}
+
 // 모든 체크박스 연결
 bindCheckbox('check-spawn', layers.spawn);
 bindCheckbox('check-animals', layers.animals);
