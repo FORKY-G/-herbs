@@ -465,7 +465,7 @@ function selectSearchResult(item) {
 // 위치 이동 및 팝업 표시 함수 (기존 유지)
 function moveToLocation(target) {
     const targetPos = mcToPx(target.x, target.z);
-    map.flyTo(targetPos, 5, { animate: true, duration: 1.0 });
+    map.flyTo(targetPos, 0.5, { animate: true, duration: 1.0 });
 
     setTimeout(() => {
         L.popup({ autoPan: false })
