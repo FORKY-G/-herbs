@@ -20,9 +20,9 @@ const mineColors = { "녹": "#2ecc71", "청": "#3498db", "황": "#f1c40f", "적"
 
 Object.keys(minePaths).forEach(colorKey => {
     const pathCoords = minePaths[colorKey].map(num => {
-        const m = mines.find(mine => mine.n === num);
-        return mcToPx(m.x, m.z);
-    });
+        const mine = mines.find(m => m.n === num);
+        if (mine) return mcToPx(mine.x, mine.z);
+    }).filter(coord => coord !== undefined);
 
     minePolylines[colorKey] = L.polyline(pathCoords, {
         color: mineColors[colorKey],
@@ -67,9 +67,9 @@ animals.forEach((ani) => {
             </div>
         </div>
     `;
-    marker.bindPopup(popupContent, {
-    autoPanPadding: [20, 20], // 정보창이 뜰 때 화면 가장자리에서 20px 정도 여유를 두고 지도를 밀어줌
-    keepInView: true          // 사용자가 지도를 움직여도 정보창이 화면 밖으로 나가지 않게 최대한 방어
+    marker.bindPopup(popupContent, { autoPanPadding: [20, 20], keepInView: true });
+    marker.on('mouseover', () => polyline.setStyle({ opacity: 0.7 }));
+    marker.on('mouseout', () => polyline.setStyle({ opacity: 0 }));
 });
 
 // 5. 스폰 지점 마커
@@ -77,7 +77,7 @@ L.marker(mcToPx(spawnData.mcX, spawnData.mcZ), { icon: compassIcon })
     .addTo(map)
     .bindPopup(`<div style="color:#000; font-weight:bold; font-size:14px; text-align:center;">스폰 지점</div>`);
 
-// 6. 광산 마커 생성
+// 6. 광산 마커 생성 (초정밀 콤팩트 UI 적용)
 mines.forEach((mine) => {
     const pos = mcToPx(mine.x, mine.z);
     const mineIcon = L.divIcon({
@@ -91,6 +91,7 @@ mines.forEach((mine) => {
     const specificOres = mineResources[mine.c];
     const commonOres = mineResources["공통"];
     const pathList = minePaths[mine.c].join(' > ');
+
     const popupContent = `
         <div style="text-align:center; min-width:230px; color:#000; padding: 0; line-height: 1.2;">
             <div style="font-size:20px; font-weight:800; border-bottom:2px solid #000; padding: 4px 0; margin-bottom: 8px; word-break:keep-all;">
