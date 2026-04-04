@@ -206,14 +206,14 @@
     <script src="js/ui-control.js"></script>   
 
     <script>
-        <script>
-        // [1] 요소 가져오기 (변수 선언은 여기서 딱 한 번만 합니다)
+        // 1. 요소 가져오기
         const sidebar = document.getElementById('controls');
         const toggleBtn = document.getElementById('toggle-sidebar');
-        const searchResultsDiv = document.getElementById('search-results'); // 이름을 살짝 바꿔서 충돌 방지
+        const searchResultsDiv = document.getElementById('search-results');
 
-        // [2] 메뉴 열기/닫기 함수
+        // 2. 메뉴 열기/닫기 함수
         function toggleSidebar() {
+            if (!sidebar) return;
             sidebar.classList.toggle('active');
             if (sidebar.classList.contains('active')) {
                 toggleBtn.innerText = '▲ 한월메뉴 닫기';
@@ -222,39 +222,43 @@
             }
         }
 
-        // [3] 버튼 클릭 시 메뉴 토글
-        toggleBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggleSidebar();
-        });
+        // 3. 버튼 클릭 시 메뉴 토글
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleSidebar();
+            });
+        }
 
-        // [4] 지도 클릭 시 메뉴 및 검색창 자동 닫기
+        // 4. 지도 클릭 시 메뉴 및 검색창 자동 닫기
         if (typeof map !== 'undefined') {
             map.on('click', function() {
-                // 메뉴 닫기
-                if (sidebar.classList.contains('active')) {
+                if (sidebar && sidebar.classList.contains('active')) {
                     sidebar.classList.remove('active');
                     toggleBtn.innerText = '▼ 한월메뉴 열기';
                 }
-                // 검색 결과창 닫기
                 if (searchResultsDiv) {
                     searchResultsDiv.style.display = 'none';
                 }
             });
         }
 
-        // [5] 메뉴 내부 클릭 시 닫힘 방지
-        sidebar.addEventListener('click', function(e) { 
-            e.stopPropagation(); 
-        });
+        // 5. 메뉴 내부 클릭 시 닫힘 방지
+        if (sidebar) {
+            sidebar.addEventListener('click', function(e) { 
+                e.stopPropagation(); 
+            });
+        }
 
-        // [6] 사냥터 아코디언 토글
+        // 6. 사냥터 아코디언 토글
         const accordionBtn = document.getElementById('hunt-accordion-btn');
         if (accordionBtn) {
             accordionBtn.addEventListener('click', function() {
                 const content = document.getElementById('hunt-accordion-content');
-                content.classList.toggle('active');
-                this.querySelector('span').innerText = content.classList.contains('active') ? '▲' : '▼';
+                if (content) {
+                    content.classList.toggle('active');
+                    this.querySelector('span').innerText = content.classList.contains('active') ? '▲' : '▼';
+                }
             });
         }
     </script>
