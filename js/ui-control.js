@@ -282,41 +282,80 @@ npcData.forEach((npc) => {
     marker.bindPopup(popupContent, { autoPan: false, keepInView: true, closeButton: false, offset: L.point(0, -5) });
 });
 
-// [14] 사냥터 영역 이미지 오버레이 생성 (개별 체크박스 연동)
+// [14] 사냥터 영역 및 투명 마커 생성 (자동 이동/확대/팝업 통합)
 const huntingImageBounds = [[0, 0], [7300, 7300]]; 
 const huntingListContainer = document.getElementById('hunt-accordion-content');
 
+// 사냥터 전용 투명 마커들을 담을 객체 추가
+layers.huntingMarkers = {}; 
+
 huntingGrounds.forEach((area) => {
+    // 1. 이미지 오버레이 생성 (interactive: false로 설정하여 다른 마커 클릭 방해 금지)
     const overlay = L.imageOverlay(`images/${area.file}`, huntingImageBounds, {
         opacity: 0.5, 
-        interactive: true
+        interactive: false 
     });
     layers.hunting[area.name] = overlay;
 
+    // 2. 투명 마커 생성 (대표 좌표 x, z 기반)
+    const targetPos = mcToPx(area.x, area.z);
+    const hMarker = L.marker(targetPos, { 
+        icon: transparentIcon,
+        zIndexOffset: -500 // 다른 중요한 마커보다 뒤에 배치
+    });
+    layers.huntingMarkers[area.name] = hMarker;
+
+    // 3. 목록(아코디언) 아이템 생성
     const label = document.createElement('label');
     label.className = 'control-item';
     label.innerHTML = `
         <input type="checkbox" id="hunt-${area.name}"> 
-        ${area.name} <span style="font-size:11px; color:#666; margin-left:4px;">(Lv.${area.lv})</span>
+        <span style="flex:1;">${area.name}</span>
+        <span style="font-size:10px; color:#888; font-weight:normal;">Lv.${area.lv}</span>
     `;
     huntingListContainer.appendChild(label);
 
-    document.getElementById(`hunt-${area.name}`).addEventListener('change', function(e) {
-        if(e.target.checked) layers.hunting[area.name].addTo(map);
-        else map.removeLayer(layers.hunting[area.name]);
-    });
-
+    // 4. 팝업 내용 정의 (마커에 연결)
     const memoInfo = area.memo ? `<div style="margin-top:4px; color:#d00; font-weight:700;">${area.memo}</div>` : '';
     const popupContent = `
         <div style="text-align:center; min-width:220px; color:#000; padding: 5px; line-height: 1.4;">
-            <div style="font-size:18px; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px; margin-bottom:8px;">${area.name} (Lv.${area.lv})</div>
+            <div style="font-size:18px; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px; margin-bottom:8px;">
+                ${area.name} (Lv.${area.lv})
+            </div>
             <div style="text-align:left; font-size:12px;">
                 <div style="margin-bottom:4px;"><span style="font-weight:800; color:#007bff;">[몬스터]</span> ${area.monsters}</div>
+                <div style="margin-bottom:4px;"><span style="font-weight:800; color:#444;">[좌표]</span> ${area.x}, ${area.y}, ${area.z}</div>
                 ${memoInfo}
             </div>
         </div>
     `;
-    overlay.bindPopup(popupContent, { autoPan: false, keepInView: true });
+    hMarker.bindPopup(popupContent, { autoPan: false, keepInView: true });
+
+    // 5. 체크박스 이벤트 연결 (이동 + 확대 + 팝업)
+    document.getElementById(`hunt-${area.name}`).addEventListener('change', function(e) {
+        if(e.target.checked) {
+            // 레이어 및 마커 표시
+            layers.hunting[area.name].addTo(map);
+            layers.huntingMarkers[area.name].addTo(map);
+
+            // [심화] 부드러운 이동 및 확대 (확대 레벨 4)
+            map.flyTo(targetPos, 4, {
+                animate: true,
+                duration: 1.0
+            });
+
+            // 이동 후 팝업 자동 열기 (0.6초 뒤)
+            setTimeout(() => {
+                layers.huntingMarkers[area.name].openPopup();
+            }, 600);
+        } else {
+            // 체크 해제 시 제거
+            map.removeLayer(layers.hunting[area.name]);
+            map.removeLayer(layers.huntingMarkers[area.name]);
+        }
+    });
+
+    // 이미지 효과 (그림 확인용)
     overlay.on('mouseover', function () { this.setOpacity(0.8); });
     overlay.on('mouseout', function () { this.setOpacity(0.5); });
 });
