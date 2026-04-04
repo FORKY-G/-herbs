@@ -264,36 +264,29 @@ npcData.forEach((npc) => {
     marker.bindPopup(popupContent, { autoPan: false, keepInView: true, closeButton: false, offset: L.point(0, -5) });
 });
 
+// [14] 사냥터 영역 이미지 오버레이 생성
 const huntingImageBounds = [[0, 0], [7300, 7300]]; 
-
 huntingGrounds.forEach((area) => {
     const overlay = L.imageOverlay(`images/${area.file}`, huntingImageBounds, {
-        opacity: 0.5, 
-        interactive: true
+        opacity: 0.5, interactive: true
     }).addTo(map);
 
     const memoInfo = area.memo ? `<div style="margin-top:4px; color:#d00; font-weight:700;">${area.memo}</div>` : '';
     const popupContent = `
         <div style="text-align:center; min-width:220px; color:#000; padding: 5px; line-height: 1.4;">
-            <div style="font-size:18px; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px; margin-bottom:8px;">
-                ${area.name} <span style="font-size:13px; color:#666;">(Lv.${area.lv})</span>
-            </div>
+            <div style="font-size:18px; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px; margin-bottom:8px;">${area.name} (Lv.${area.lv})</div>
             <div style="text-align:left; font-size:12px;">
                 <div style="margin-bottom:4px;"><span style="font-weight:800; color:#007bff;">[몬스터]</span> ${area.monsters}</div>
                 ${memoInfo}
             </div>
         </div>
     `;
-    
     overlay.bindPopup(popupContent, { autoPan: false, keepInView: true });
-    
-    // 마우스 반응 효과
     overlay.on('mouseover', function () { this.setOpacity(0.8); });
     overlay.on('mouseout', function () { this.setOpacity(0.5); });
 });
 
-
-// [최종] 잘림 방지 보정 스크립트 (모든 마커 생성이 끝난 맨 아래 위치)
+// [최종] 잘림 방지 보정 스크립트
 map.on('popupopen', function(e) {
     const popup = e.popup;
     const container = popup._container;
