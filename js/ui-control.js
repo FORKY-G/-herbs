@@ -278,7 +278,7 @@ npcData.forEach((npc) => {
     marker.bindPopup(popupContent, { autoPan: false, keepInView: true, closeButton: false, offset: L.point(0, -5) });
 });
 
-// [14] 사냥터 영역 및 투명 마커 생성 (자동 이동/확대/팝업 통합)
+// [14] 사냥터 영역 및 투명 마커 생성 (수정본)
 const huntingImageBounds = [[0, 0], [7300, 7300]]; 
 const huntingListContainer = document.getElementById('hunt-accordion-content');
 
@@ -293,7 +293,7 @@ huntingGrounds.forEach((area) => {
     const hMarker = L.marker(targetPos, { 
         icon: transparentIcon,
         zIndexOffset: -500
-    }).addTo(layers.huntingMarkers); // 중요: 검색을 위해 그룹에 추가
+    }).addTo(layers.huntingMarkers); // 검색용 그룹에 추가
 
     const label = document.createElement('label');
     label.className = 'control-item';
@@ -323,7 +323,7 @@ huntingGrounds.forEach((area) => {
         if(e.target.checked) {
             layers.hunting[area.name].addTo(map);
             hMarker.addTo(map);
-            map.flyTo(targetPos, 4, { animate: true, duration: 1.0 });
+            map.flyTo(targetPos, 0.5, { animate: true, duration: 1.0 }); 1
             setTimeout(() => { hMarker.openPopup(); }, 500);
         } else {
             map.removeLayer(layers.hunting[area.name]);
@@ -439,7 +439,7 @@ function selectSearchResult(item) {
 
 function moveToLocation(target) {
     const targetPos = mcToPx(target.x, target.z);
-    map.flyTo(targetPos, 0.5, { animate: true, duration: 1.0 });
+    map.flyTo(targetPos, 1, { animate: true, duration: 1.0 });
 
     setTimeout(() => {
         let foundMarker = null;
