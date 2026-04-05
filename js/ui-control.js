@@ -323,7 +323,7 @@ huntingGrounds.forEach((area) => {
         if(e.target.checked) {
             layers.hunting[area.name].addTo(map);
             hMarker.addTo(map);
-            map.flyTo(targetPos, 0.5, { animate: true, duration: 1.0 }); 1
+            map.flyTo(targetPos, 4, { animate: true, duration: 1.0 }); 
             setTimeout(() => { hMarker.openPopup(); }, 500);
         } else {
             map.removeLayer(layers.hunting[area.name]);
@@ -335,153 +335,7 @@ huntingGrounds.forEach((area) => {
     overlay.on('mouseout', function () { this.setOpacity(0.5); });
 });
 
-// [15] 체크박스 이벤트 연결 시스템
-const bindCheckbox = (id, layer) => {
-    const checkbox = document.getElementById(id);
-    if (checkbox) {
-        checkbox.addEventListener('change', function(e) {
-            if(e.target.checked) layer.addTo(map);
-            else map.removeLayer(layer);
-        });
-    }
-};
-
-// 모든 체크박스 연결
-bindCheckbox('check-spawn', layers.spawn);
-bindCheckbox('check-animals', layers.animals);
-bindCheckbox('check-stones', layers.stones);
-bindCheckbox('check-npc', layers.npc);
-bindCheckbox('check-red', layers.red);
-bindCheckbox('check-pot', layers.pot);
-bindCheckbox('check-box', layers.box);
-bindCheckbox('mine-녹', layers.mines["녹"]);
-bindCheckbox('mine-청', layers.mines["청"]);
-bindCheckbox('mine-황', layers.mines["황"]);
-bindCheckbox('mine-적', layers.mines["적"]);
-
-// [16] 통합 검색 시스템
-const searchInput = document.getElementById('search-input');
-const searchResults = document.getElementById('search-results');
-let currentFilteredData = [];
-
-searchInput.addEventListener('input', function() {
-    const query = this.value.trim().toLowerCase();
-    searchResults.innerHTML = '';
-    currentFilteredData = []; 
-    
-    if (!query) {
-        searchResults.style.display = 'none';
-        return;
-    }
-
-    animals.forEach(ani => {
-        if (ani.name.toLowerCase().includes(query)) {
-            currentFilteredData.push({ name: ani.name, category: '십이지신', x: ani.mcX, z: ani.mcZ, type: 'animal' });
-        }
-    });
-
-    mines.forEach(mine => {
-        if (mine.n.toString() === query) {
-            currentFilteredData.push({ name: `${mine.n}번 광산`, category: '광산', x: mine.x, z: mine.z, type: 'mine' });
-        }
-    });
-
-    huntingGrounds.forEach(area => {
-        if (area.name.toLowerCase().includes(query) || area.monsters.toLowerCase().includes(query)) {
-            currentFilteredData.push({ name: area.name, category: `사냥터 (${area.monsters})`, x: area.x, z: area.z, type: 'hunting', areaName: area.name });
-        }
-    });
-
-    const extras = [
-        { data: npcData, cat: 'NPC' },
-        { data: redItems, cat: '적환단' },
-        { data: statues, cat: '동상/산' },
-        { data: mountains, cat: '동상/산' },
-        { data: potItems, cat: '탐색' },
-        { data: mysteryBoxes, cat: '의문의 상자' }
-    ];
-
-    extras.forEach(group => {
-        group.data.forEach(item => {
-            const name = item.name || (item.file ? "적환단" : group.cat);
-            if (name.toLowerCase().includes(query)) {
-                currentFilteredData.push({ name: name, category: group.cat, x: item.x, z: item.z, type: 'extra' });
-            }
-        });
-    });
-
-    if (currentFilteredData.length > 0) {
-        searchResults.style.display = 'block';
-        currentFilteredData.forEach((item) => {
-            const div = document.createElement('div');
-            div.className = 'search-result-item';
-            div.innerHTML = `<span class="category">[${item.category}]</span> ${item.name}`;
-            div.onclick = () => selectSearchResult(item);
-            searchResults.appendChild(div);
-        });
-    } else {
-        searchResults.style.display = 'none';
-    }
-});
-
-searchInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && currentFilteredData.length > 0) {
-        selectSearchResult(currentFilteredData[0]);
-    }
-});
-
-function selectSearchResult(item) {
-    moveToLocation(item);
-    searchResults.style.display = 'none';
-    searchInput.value = item.name;
-    searchInput.blur();
-}
-
-function moveToLocation(target) {
-    const targetPos = mcToPx(target.x, target.z);
-    map.flyTo(targetPos, 1, { animate: true, duration: 1.0 });
-
-    setTimeout(() => {
-        let foundMarker = null;
-
-        // 1. 일반 레이어에서 찾기
-        const searchGroups = [layers.spawn, layers.animals, layers.stones, layers.npc, layers.red, layers.pot, layers.box, ...Object.values(layers.mines)];
-        searchGroups.forEach(group => {
-            group.eachLayer(layer => {
-                if (layer instanceof L.Marker && layer.getLatLng().equals(targetPos)) foundMarker = layer;
-            });
-        });
-
-        // 2. 사냥터 레이어에서 찾기
-        if (!foundMarker) {
-            layers.huntingMarkers.eachLayer(layer => {
-                if (layer instanceof L.Marker && layer.getLatLng().equals(targetPos)) foundMarker = layer;
-            });
-        }
-
-        if (foundMarker) {
-            // 레이어 체크여부 상관없이 검색된 마커는 임시로 지도에 추가해서 팝업 띄움
-            if (!map.hasLayer(foundMarker)) foundMarker.addTo(map);
-            foundMarker.openPopup();
-        } else {
-            L.popup().setLatLng(targetPos)
-                .setContent(`<div style="text-align:center; font-weight:800;">[${target.category}]<br>${target.name}</div>`)
-                .openOn(map);
-        }
-
-        // 사냥터일 경우 이미지가 꺼져있으면 켜주기
-        if (target.type === 'hunting') {
-            const chk = document.getElementById(`hunt-${target.areaName}`);
-            if (chk && !chk.checked) {
-                chk.checked = true;
-                layers.hunting[target.areaName].addTo(map);
-                foundMarker.addTo(map);
-            }
-        }
-    }, 1100);
-}
-
-// [17] 약초 시스템 (희귀 표시 및 멀티 마커 지원)
+// [15] 약초 시스템 (희귀 표시 및 멀티 마커 지원)
 const herbListContainer = document.getElementById('herb-accordion-content');
 layers.herbs = {};
 layers.herbMarkers = {};
@@ -554,6 +408,177 @@ herbData.forEach((herb) => {
         }
     });
 });
+
+// [16] 체크박스 이벤트 연결 시스템
+const bindCheckbox = (id, layer) => {
+    const checkbox = document.getElementById(id);
+    if (checkbox) {
+        checkbox.addEventListener('change', function(e) {
+            if(e.target.checked) layer.addTo(map);
+            else map.removeLayer(layer);
+        });
+    }
+};
+
+// 모든 체크박스 연결
+bindCheckbox('check-spawn', layers.spawn);
+bindCheckbox('check-animals', layers.animals);
+bindCheckbox('check-stones', layers.stones);
+bindCheckbox('check-npc', layers.npc);
+bindCheckbox('check-red', layers.red);
+bindCheckbox('check-pot', layers.pot);
+bindCheckbox('check-box', layers.box);
+bindCheckbox('mine-녹', layers.mines["녹"]);
+bindCheckbox('mine-청', layers.mines["청"]);
+bindCheckbox('mine-황', layers.mines["황"]);
+bindCheckbox('mine-적', layers.mines["적"]);
+
+// [17] 통합 검색 시스템
+const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+let currentFilteredData = [];
+
+searchInput.addEventListener('input', function() {
+    const query = this.value.trim().toLowerCase();
+    searchResults.innerHTML = '';
+    currentFilteredData = []; 
+    
+    if (!query) {
+        searchResults.style.display = 'none';
+        return;
+    }
+
+    // 약초 검색 데이터 수집
+    herbData.forEach(herb => {
+        if (herb.name.toLowerCase().includes(query)) {
+            const isRare = rareHerbs.includes(herb.name);
+            const rareLabel = isRare ? ' (희귀)' : '';
+            currentFilteredData.push({ 
+                name: herb.name + rareLabel, 
+                category: '약초', 
+                x: herb.locations[0].x, 
+                z: herb.locations[0].z, 
+                type: 'herb',
+                herbName: herb.name 
+            });
+        }
+    });
+
+    animals.forEach(ani => {
+        if (ani.name.toLowerCase().includes(query)) {
+            currentFilteredData.push({ name: ani.name, category: '십이지신', x: ani.mcX, z: ani.mcZ, type: 'animal' });
+        }
+    });
+
+    mines.forEach(mine => {
+        if (mine.n.toString() === query) {
+            currentFilteredData.push({ name: `${mine.n}번 광산`, category: '광산', x: mine.x, z: mine.z, type: 'mine' });
+        }
+    });
+
+    huntingGrounds.forEach(area => {
+        if (area.name.toLowerCase().includes(query) || area.monsters.toLowerCase().includes(query)) {
+            currentFilteredData.push({ name: area.name, category: `사냥터 (${area.monsters})`, x: area.x, z: area.z, type: 'hunting', areaName: area.name });
+        }
+    });
+
+    const extras = [
+        { data: npcData, cat: 'NPC' },
+        { data: redItems, cat: '적환단' },
+        { data: statues, cat: '동상/산' },
+        { data: mountains, cat: '동상/산' },
+        { data: potItems, cat: '탐색' },
+        { data: mysteryBoxes, cat: '의문의 상자' }
+    ];
+
+    extras.forEach(group => {
+        group.data.forEach(item => {
+            const name = item.name || (item.file ? "적환단" : group.cat);
+            if (name.toLowerCase().includes(query)) {
+                currentFilteredData.push({ name: name, category: group.cat, x: item.x, z: item.z, type: 'extra' });
+            }
+        });
+    });
+
+    if (currentFilteredData.length > 0) {
+        searchResults.style.display = 'block';
+        currentFilteredData.forEach((item) => {
+            const div = document.createElement('div');
+            div.className = 'search-result-item';
+            div.innerHTML = `<span class="category">[${item.category}]</span> ${item.name}`;
+            div.onclick = () => selectSearchResult(item);
+            searchResults.appendChild(div);
+        });
+    } else {
+        searchResults.style.display = 'none';
+    }
+});
+
+searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && currentFilteredData.length > 0) {
+        selectSearchResult(currentFilteredData[0]);
+    }
+});
+
+function selectSearchResult(item) {
+    moveToLocation(item);
+    searchResults.style.display = 'none';
+    searchInput.value = item.name.replace(' (희귀)', ''); // 이름 보정
+    searchInput.blur();
+}
+
+function moveToLocation(target) {
+    const targetPos = mcToPx(target.x, target.z);
+    map.flyTo(targetPos, 1, { animate: true, duration: 1.0 });
+
+    setTimeout(() => {
+        let foundMarker = null;
+
+        // 1. 일반 레이어에서 찾기
+        const searchGroups = [layers.spawn, layers.animals, layers.stones, layers.npc, layers.red, layers.pot, layers.box, ...Object.values(layers.mines)];
+        searchGroups.forEach(group => {
+            group.eachLayer(layer => {
+                if (layer instanceof L.Marker && layer.getLatLng().equals(targetPos)) foundMarker = layer;
+            });
+        });
+
+        // 2. 약초 레이어 특수 처리
+        if (target.type === 'herb') {
+            const chk = document.getElementById(`herb-${target.herbName}`);
+            if (chk && !chk.checked) {
+                chk.checked = true;
+                layers.herbs[target.herbName].addTo(map);
+                layers.herbMarkers[target.herbName].addTo(map);
+            }
+            foundMarker = layers.herbMarkers[target.herbName].getLayers()[0];
+        }
+
+        // 3. 사냥터 레이어에서 찾기
+        if (!foundMarker) {
+            layers.huntingMarkers.eachLayer(layer => {
+                if (layer instanceof L.Marker && layer.getLatLng().equals(targetPos)) foundMarker = layer;
+            });
+        }
+
+        if (foundMarker) {
+            if (!map.hasLayer(foundMarker)) foundMarker.addTo(map);
+            foundMarker.openPopup();
+        } else {
+            L.popup().setLatLng(targetPos)
+                .setContent(`<div style="text-align:center; font-weight:800;">[${target.category}]<br>${target.name}</div>`)
+                .openOn(map);
+        }
+
+        if (target.type === 'hunting') {
+            const chk = document.getElementById(`hunt-${target.areaName}`);
+            if (chk && !chk.checked) {
+                chk.checked = true;
+                layers.hunting[target.areaName].addTo(map);
+                foundMarker.addTo(map);
+            }
+        }
+    }, 1100);
+}
 
 // [최종] 잘림 방지 보정 스크립트
 map.on('popupopen', function(e) {
