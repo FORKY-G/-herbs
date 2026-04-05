@@ -303,7 +303,7 @@ npcData.forEach((npc) => {
                 <div style="font-weight:800; font-size:13px; color:#007bff; margin-bottom:5px;">[퀘스트 가이드 영상]</div>
                 <video width="100%" height="auto" controls style="border-radius:4px; border:1px solid #ddd;">
                     <source src="images/haemusa.mov" type="video/quicktime">
-                    <source src="images/haemusa.mp4" type="video/mp4">
+                    <source src="images/haemusa.mov" type="video/mov">
                     브라우저가 동영상을 지원하지 않습니다.
                 </video>
             </div>
