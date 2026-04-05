@@ -146,22 +146,14 @@ mines.forEach((mine) => {
 redItems.forEach((item) => {
     const pos = mcToPx(item.x, item.z);
     
-    // 1. 아이콘 설정: 데이터에 file이 있으면 해당 이미지, 없으면 기본 red.png 사용
-    const iconUrl = item.file ? `images/${item.file}` : `images/red.png`;
-    const customIcon = L.icon({
-        iconUrl: iconUrl,
-        iconSize: [32, 32], 
-        iconAnchor: [16, 16],
-        popupAnchor: [0, -15]
-    });
-    
-    // [중요] marker 생성 시 icon을 위에서 만든 customIcon으로 교체했습니다.
-    const marker = L.marker(pos, { icon: customIcon }).addTo(layers.red);
+    // 1. 아이콘 설정: 모든 항목에 공통으로 redIcon(red.png)을 사용합니다.
+    // 만약 탐령구/정적주만 아이콘을 다르게 하고 싶다면 그때 다시 말씀해주세요!
+    const marker = L.marker(pos, { icon: redIcon }).addTo(layers.red);
 
     // 2. 팝업 내용 설정: 이름과 재료가 데이터에 있으면 표시
-    const itemName = item.name || "적환단"; // 이름 없으면 기본값 적환단
+    const itemName = item.name || "적환단"; 
     const materialInfo = item.materials ? `
-        <div style="text-align:left; font-size:12px; margin-bottom:8px; padding:5px; background:#f4f4f4; border-radius:4px;">
+        <div style="text-align:left; font-size:12px; margin-bottom:8px; padding:8px; background:#f9f9f9; border:1px solid #eee; border-radius:4px;">
             <span style="color:#d00; font-weight:800;">[필요재료]</span><br>${item.materials}
         </div>` : '';
 
