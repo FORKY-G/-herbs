@@ -167,7 +167,7 @@ const huntingGrounds = [
     { name: "멸문", lv: "40~50", monsters: "뱀(lv.40), 청사(lv.45), 적사(lv.50)", memo: "*구렁이 출현", file: "map4.png", x: 3858, y: 131, z: -2635 },
     { name: "신선원", lv: "55~65", monsters: "새싹삼(lv.55), 진삼(lv.60), 대장삼(lv.65)", memo: "*거대삼 출현, *농장주인 소환 포탈", file: "map5.png", x: -3616, y: 244, z: -3096 },
     { name: "천웅성", lv: "70~80", monsters: "비웅(lv70), 겸웅(lv.75), 꼬마유령(lv.80)", file: "map6.png", x: 5706, y: 160, z: 5178 },
-    { name: "매화곡", lv: "85~95", monsters: "천도원숭이(lv.85), 황도원숭이(lv.90), 매화호(lv.95)", memo: "*거대 매화호 출현", file: "map7.png", x: 5696, y: 151, z: 5212 },
+    { name: "매화곡", lv: "85~95", monsters: "천도원숭이(lv.85), 황도원숭이(lv.90), 매화호(lv.95)", memo: "*거대 매화호 출현", file: "map7.png", x: 4288, y: 141, z: 408 },
     { name: "이매궁", lv: "100~110", monsters: "도깨비(lv.100), 청깨비(lv.105), 진깨비(lv.110)", file: "map8.png", x: 1634, y: 72, z: 331 },
     { name: "검성지묘", lv: "115~125", monsters: "강암수호(Lv.115), 새끼암갑수(Lv.120), 암갑수(Lv.125)", file: "map9.png", x: -5428, y: 121, z: -808 },
     { name: "빙설곡", lv: "130~140", monsters: "백랑(Lv.130), 적호(Lv.135), 백호(Lv.140)", file: "map10.png", x: 6796, y: 87, z: -2515 },
