@@ -77,9 +77,7 @@ const redItems = [
     { n: 4, x: 2661, y: 72, z: -4790, file: "red4.png" },
     { n: 5, x: 1961, y: 150, z: -6200, file: "red5.png" },
     { n: 6, x: -2579, y: 87, z: -5970, file: "red6.png" },
-    { n: 7, x: -3375, y: 100, z: 3449, file: "red7.png" },
-    { n: "탐령구", x: -2076, y: 221, z: 401, materials: "철1개, 적동괴2개", file: "gu.png"},
-    { n: "정적주", x: 2034, y: -19, z: 3265, materials: "철1개, 적동괴2개, 송진덩어리", file: "gu2.png"}
+    { n: 7, x: -3375, y: 100, z: 3449, file: "red7.png" }
 ];
 
 // 동상 데이터 (이미지 포함)
@@ -161,6 +159,8 @@ const npcData = [
     { name: "연운객", lv: 50, x: -5689, y: 248, z: 3291, quest: "하늘을좇는자", route: "연운객 > 시녀", reward: "창천검법", file: "yeonun.png" },
     { name: "명인대장장이", x: -7047, y: 74, z: -727, quest: "???", file: "mungin.png" },
     { name: "망한대장장이", x: 5365, y: 73, z: -3467, quest: "[히든]심마니", item: "은괴 3개, 무괴철 3개", file: "mang.png" },
+    { name: "탐령구", x: -2076, y: 221, z: 401, materials: "철1개, 적동괴2개", file: "gu.png"},
+    { name: "정적주", x: 2034, y: -19, z: 3265, materials: "철1개, 적동괴2개, 송진덩어리", file: "gu2.png"}
     { name: "감시관", lv: 67, x: 5176, y: 76, z: 4582, quest: "[메인]퀘스트", item: "사보도 1개, 철 3개, 무공정수 10개", file: "gamsi.png" }
 ];
 
