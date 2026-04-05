@@ -319,17 +319,17 @@ huntingGrounds.forEach((area) => {
     `;
     hMarker.bindPopup(popupContent, { autoPan: false, keepInView: true });
 
-    document.getElementById(`hunt-${area.name}`).addEventListener('change', function(e) {
-        if(e.target.checked) {
-            layers.hunting[area.name].addTo(map);
-            hMarker.addTo(map);
-            map.flyTo(targetPos, 0.5, { animate: true, duration: 1.0 }); 
-            setTimeout(() => { hMarker.openPopup(); }, 500);
-        } else {
-            map.removeLayer(layers.hunting[area.name]);
-            map.removeLayer(hMarker);
-        }
-    });
+    document.getElementById(`herb-${herb.name}`).addEventListener('change', function(e) {
+    if(e.target.checked) {
+        // 지도는 움직이지 않고, 약초 레이어와 마커만 화면에 나타납니다.
+        layers.herbs[herb.name].addTo(map);
+        layers.herbMarkers[herb.name].addTo(map);
+    } else {
+        map.removeLayer(layers.herbs[herb.name]);
+        map.removeLayer(layers.herbMarkers[herb.name]);
+        map.closePopup();
+    }
+});
 
     overlay.on('mouseover', function () { this.setOpacity(0.8); });
     overlay.on('mouseout', function () { this.setOpacity(0.5); });
