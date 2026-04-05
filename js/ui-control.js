@@ -362,21 +362,27 @@ sortedHerbData.forEach((herb) => {
 
     const markerGroup = L.layerGroup();
     herb.locations.forEach(loc => {
-        const pos = mcToPx(loc.x, loc.z);
-        const hMarker = L.marker(pos, { icon: transparentIcon });
-        const popupContent = `
-            <div style="text-align:center; min-width:180px; color:#000;">
-                <div style="font-size:16px; font-weight:800; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:8px;">
-                    ${herb.name}${rareTag}
-                </div>
-                <div style="background:#333; color:#FFD700; border-radius:4px; padding:6px; cursor:pointer; font-size:14px; font-weight:700;" onclick="copyCoords(${loc.x}, 0, ${loc.z})">
-                    ${loc.x}, ${loc.z}
-                </div>
+    const pos = mcToPx(loc.x, loc.z);
+    const hMarker = L.marker(pos, { icon: transparentIcon });
+    
+    // y값이 없을 경우를 대비해 기본값 0을 설정하거나, 있으면 loc.y를 출력합니다.
+    const yVal = loc.y !== undefined ? loc.y : 0;
+
+    const popupContent = `
+        <div style="text-align:center; min-width:180px; color:#000;">
+            <div style="font-size:16px; font-weight:800; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:8px;">
+                ${herb.name}${rareTag}
             </div>
-        `;
-        hMarker.bindPopup(popupContent, { closeButton: false, offset: L.point(0, -10) });
-        markerGroup.addLayer(hMarker);
-    });
+            <div style="background:#333; color:#FFD700; border-radius:4px; padding:6px; cursor:pointer; font-size:14px; font-weight:700;" 
+                 onclick="copyCoords(${loc.x}, ${yVal}, ${loc.z})">
+                ${loc.x}, ${yVal}, ${loc.z}
+                <div style="color:#aaa; font-size:10px; font-weight:normal; margin-top:2px;">(클릭하여 좌표 복사)</div>
+            </div>
+        </div>
+    `;
+    hMarker.bindPopup(popupContent, { closeButton: false, offset: L.point(0, -10) });
+    markerGroup.addLayer(hMarker);
+});
     layers.herbMarkers[herb.name] = markerGroup;
 
     const label = document.createElement('label');
