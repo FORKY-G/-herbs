@@ -518,31 +518,71 @@ function selectSearchResult(item) {
 function moveToLocation(target) {
     const targetPos = mcToPx(target.x, target.z);
 
+    // 1. 이동 및 확대 (약초가 아닐 때만 부드럽게 이동)
     if (target.type !== 'herb') {
-        // 이동 배율과 속도 최적화
         map.flyTo(targetPos, -0.5, { animate: true, duration: 0.5 });
     }
 
+    // 2. 이동 애니메이션이 끝날 즈음(0.6초 뒤) 실제 레이어와 팝업 활성화
     setTimeout(() => {
+        let foundMarker = null;
+
+        // --- [A] 약초 타입인 경우 ---
         if (target.type === 'herb') {
             const chk = document.getElementById(`herb-${target.herbName}`);
-            if (chk && !chk.checked) {
-                chk.checked = true;
-                layers.herbs[target.herbName].addTo(map);
-                layers.herbMarkers[target.herbName].addTo(map);
+            if (chk) {
+                if (!chk.checked) {
+                    chk.checked = true; // 체크박스 시각적 동기화
+                    layers.herbs[target.herbName].addTo(map);
+                    layers.herbMarkers[target.herbName].addTo(map);
+                }
+                // 해당 약초의 마커 그룹에서 첫 번째 마커를 찾아 팝업 대상으로 지정
+                foundMarker = layers.herbMarkers[target.herbName].getLayers()[0];
             }
-        } else if (target.type === 'hunting') {
+        } 
+        // --- [B] 사냥터 타입인 경우 ---
+        else if (target.type === 'hunting') {
             const chk = document.getElementById(`hunt-${target.areaName}`);
-            if (chk && !chk.checked) {
-                chk.checked = true;
-                layers.hunting[target.areaName].addTo(map);
+            if (chk) {
+                if (!chk.checked) {
+                    chk.checked = true;
+                    layers.hunting[target.areaName].addTo(map);
+                }
+                // 사냥터 마커 그룹에서 해당 위치 마커 찾기
+                layers.huntingMarkers.eachLayer(layer => {
+                    if (layer.getLatLng().equals(targetPos)) foundMarker = layer;
+                });
+                if (foundMarker && !map.hasLayer(foundMarker)) foundMarker.addTo(map);
             }
+        } 
+        // --- [C] 기타(NPC, 광산, 적환단 등) 일반 레이어 그룹인 경우 ---
+        else {
+            const searchGroups = [
+                layers.spawn, layers.animals, layers.stones, layers.npc, 
+                layers.red, layers.pot, layers.box, 
+                ...Object.values(layers.mines)
+            ];
+            
+            searchGroups.forEach(group => {
+                group.eachLayer(layer => {
+                    if (layer instanceof L.Marker && layer.getLatLng().equals(targetPos)) {
+                        foundMarker = layer;
+                    }
+                });
+            });
         }
-        
-        // 성능 개선: 무거운 eachLayer 루프를 제거하고 즉시 팝업 표시
-        L.popup().setLatLng(targetPos)
-            .setContent(`<div style="text-align:center; font-weight:800;">[${target.category}]<br>${target.name}</div>`)
-            .openOn(map);
+
+        // 3. 최종 연출: 찾은 마커가 있다면 정식 팝업을 띄웁니다.
+        if (foundMarker) {
+            // 마커가 지도에 안 보이고 있다면 보이게 추가
+            if (!map.hasLayer(foundMarker)) foundMarker.addTo(map);
+            foundMarker.openPopup(); 
+        } else {
+            // 마커를 도저히 못 찾은 경우에만 임시 팝업 (예비용)
+            L.popup().setLatLng(targetPos)
+                .setContent(`<div style="text-align:center; font-weight:800;">[${target.category}]<br>${target.name}</div>`)
+                .openOn(map);
+        }
     }, 600);
 }
 
