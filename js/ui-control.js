@@ -142,59 +142,25 @@ mines.forEach((mine) => {
     marker.on('mouseout', () => minePolylines[mine.c].setStyle({ opacity: 0 }));
 });
 
-// [8] 적환단 및 특수 제작 아이템 마커 생성
+// [8] 적환단 마커 생성
 redItems.forEach((item) => {
+    if (typeof item.n === "string") return; 
+
     const pos = mcToPx(item.x, item.z);
-    
-    // 1. 아이콘 결정
-    // item.n 이 숫자가 아니면(즉, "탐령구" 같은 글자이면) 전용 아이콘 사용
-    // item.n 이 숫자이면(일반 적환단) 기본 redIcon 사용
-    let currentIcon;
-    if (typeof item.n === "string") {
-        currentIcon = L.icon({
-            iconUrl: `images/${item.file}`,
-            iconSize: [32, 32], 
-            iconAnchor: [16, 16],
-            popupAnchor: [0, -15]
-        });
-    } else {
-        currentIcon = redIcon; // 기존 정의된 redIcon (red.png)
-    }
-
-    const marker = L.marker(pos, { icon: currentIcon }).addTo(layers.red);
-
-    // 2. 팝업 이름 설정: 숫우면 "적환단", 글자면 해당 이름("탐령구" 등) 출력
-    const itemName = typeof item.n === "string" ? item.n : "적환단"; 
-
-    // 3. 재료 정보: 데이터에 materials가 있을 때만 생성
-    const materialInfo = item.materials ? `
-        <div style="text-align:left; font-size:12px; margin-bottom:8px; padding:10px; background:#fff; border-radius:4px; border:1px solid #eee;">
-            <span style="color:#d00; font-weight:800;">[필요재료]</span><br>
-            <span style="font-weight:700; color:#333;">${item.materials}</span>
-        </div>` : '';
-
-    // 4. 사진 섹션: 일반 적환단(n이 숫자일 때)만 상세 사진 표시
-    const imageSection = typeof item.n !== "string" ? `
-        <div style="margin-top: 5px; border: 1px solid #ccc; padding: 2px; background: #fff;">
-            <img src="images/${item.file}" style="width:100%; max-width:180px; height:auto; cursor:zoom-in; display:block; margin:0 auto;" onclick="window.open('images/${item.file}', '_blank')">
-        </div>` : '';
+    const marker = L.marker(pos, { icon: redIcon }).addTo(layers.red);
 
     const popupContent = `
         <div style="text-align:center; min-width:200px; color:#000; padding: 0;">
-            <div style="font-size:18px; font-weight:800; border-bottom:2px solid #000; padding: 5px 0; margin-bottom: 10px;">
-                ${itemName}
-            </div>
-            
+            <div style="font-size:18px; font-weight:800; border-bottom:2px solid #000; padding: 5px 0; margin-bottom: 10px;">적환단</div>
             <div style="background:#333; border-radius:4px; padding: 5px 0; margin-bottom: 10px; cursor:pointer;" onclick="copyCoords(${item.x}, ${item.y}, ${item.z})">
                 <div style="color:#FFD700; font-size:15px; font-weight:700;">${item.x}, ${item.y}, ${item.z}</div>
                 <div style="color:#aaa; font-size:9px;">(클릭하여 좌표 복사)</div>
             </div>
-
-            ${materialInfo}
-            ${imageSection}
+            <div style="margin-top: 5px; border: 1px solid #ccc; padding: 2px; background: #fff;">
+                <img src="images/${item.file}" style="width:100%; max-width:180px; height:auto; cursor:zoom-in; display:block; margin:0 auto;" onclick="window.open('images/${item.file}', '_blank')">
+            </div>
         </div>
     `;
-    
     marker.bindPopup(popupContent, { autoPan: false, keepInView: true, closeButton: false, offset: L.point(0, -5) });
 });
 
@@ -291,44 +257,67 @@ mysteryBoxes.forEach((box) => {
     marker.bindPopup(popupContent, { autoPan: false, keepInView: true, closeButton: false, offset: L.point(0, -5) });
 });
 
-// [13] 퀘스트 NPC 마커 생성
+// [13] 퀘스트 NPC 및 특수 아이템(탐령구/정적주) 마커 생성
 npcData.forEach((npc) => {
     const pos = mcToPx(npc.x, npc.z);
-    let currentIcon = npc.file === "transparent" ? transparentIcon : L.icon({ iconUrl: `images/${npc.file}`, iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -20] });
+    
+    // 탐령구, 정적주는 32x32 사이즈로, 일반 NPC는 40x40 사이즈로 아이콘 생성
+    const isSpecial = (npc.name === "탐령구" || npc.name === "정적주");
+    let currentIcon;
+
+    if (npc.file === "transparent") {
+        currentIcon = transparentIcon;
+    } else {
+        currentIcon = L.icon({
+            iconUrl: `images/${npc.file}`,
+            iconSize: isSpecial ? [32, 32] : [40, 40],
+            iconAnchor: isSpecial ? [16, 16] : [20, 20],
+            popupAnchor: [0, -20]
+        });
+    }
+
     const marker = L.marker(pos, { icon: currentIcon }).addTo(layers.npc);
+
+    // 기록서 위치 복사 버튼 (해무사승려 등 전용)
     let recordsHtml = '';
     if (npc.records && npc.records.length > 0) {
         recordsHtml = `
             <div style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
                 <div style="font-weight:800; font-size:13px; color:#d00; margin-bottom:5px;">[기록서 위치 복사]</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                    ${npc.records.map(rec => `
+                        <button onclick="copyCoords(${rec.x}, ${rec.y}, ${rec.z})" 
+                                style="padding:4px; font-size:11px; background:#f8f9fa; border:1px solid #ccc; cursor:pointer; font-weight:700;">
+                            기록서 ${rec.n}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
         `;
-        npc.records.forEach(rec => {
-            recordsHtml += `
-                <button onclick="copyCoords(${rec.x}, ${rec.y}, ${rec.z})" 
-                        style="padding:4px; font-size:11px; background:#f8f9fa; border:1px solid #ccc; cursor:pointer; font-weight:700;">
-                    기록서 ${rec.n}
-                </button>
-            `;
-        });
-        recordsHtml += `</div></div>`;
-    } 
+    }
+
     const lvInfo = npc.lv ? `<span style="font-size:12px; color:#666; font-weight:normal;"> (lv.${npc.lv})</span>` : '';
     const questInfo = npc.quest ? `<div style="margin-bottom:4px;"><span style="color:#d00; font-weight:800;">[퀘스트]</span> ${npc.quest}</div>` : '';
     const itemInfo = npc.item ? `<div style="margin-bottom:4px;"><span style="color:#007bff; font-weight:800;">[필요아이템]</span> ${npc.item}</div>` : '';
-    const routeInfo = npc.route ? `<div style="margin-bottom:4px;"><span style="color:#28a745; font-weight:800;">[동선]</span> ${npc.route}</div>` : '';
-    const rewardInfo = npc.reward ? `<div style="margin-bottom:4px;"><span style="color:#f39c12; font-weight:800;">[보상]</span> ${npc.reward}</div>` : '';
-    const memoInfo = npc.memo ? `<div style="margin-top:4px; border-top:1px dashed #ccc; padding-top:4px; color:#666;">※ ${npc.memo}</div>` : '';
+    
+    // 탐령구/정적주용 제작 재료 정보 표시
+    const materialInfo = npc.materials ? `
+        <div style="margin-top:8px; padding:8px; background:#f4faff; border:1px solid #cce5ff; border-radius:4px; font-size:12px; color:#004085;">
+            <span style="font-weight:800;">[제작재료]</span><br>${npc.materials}
+        </div>` : '';
+
     const popupContent = `
         <div style="text-align:center; min-width:240px; color:#000; padding: 0; line-height: 1.4;">
-            <div style="font-size:18px; font-weight:800; border-bottom:2px solid #000; padding: 5px 0; margin-bottom: 10px;">${npc.name}${lvInfo}</div>
+            <div style="font-size:18px; font-weight:800; border-bottom:2px solid #000; padding: 5px 0; margin-bottom: 10px;">
+                ${npc.name}${lvInfo}
+            </div>
             <div style="background:#333; border-radius:4px; padding: 6px 0; margin-bottom: 10px; cursor:pointer;" onclick="copyCoords(${npc.x}, ${npc.y}, ${npc.z})">
                 <div style="color:#FFD700; font-size:15px; font-weight:700;">${npc.x}, ${npc.y}, ${npc.z}</div>
-                <div style="color:#aaa; font-size:9px;">(클릭하여 좌표 복사)</div>
+                <div style="color:#aaa; font-size:9px;">(위치 복사)</div>
             </div>
             <div style="text-align:left; font-size:12px; color:#333;">
-                ${questInfo}
-                ${recordsHtml} </div>
+                ${questInfo}${itemInfo}${materialInfo}${recordsHtml}
+            </div>
         </div>
     `;
     marker.bindPopup(popupContent, { autoPan: false, keepInView: true, closeButton: false, offset: L.point(0, -5) });
