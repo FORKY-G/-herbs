@@ -523,11 +523,16 @@ function selectSearchResult(item) {
 
 function moveToLocation(target) {
     const targetPos = mcToPx(target.x, target.z);
-    // 검색 시 이동 확대 배율 조정 (2)
-    map.flyTo(targetPos, 0.5, { animate: true, duration: 1.0 });
+
+    // [수정] 약초 타입이 아닐 때만 지도를 이동하고 확대합니다.
+    if (target.type !== 'herb') {
+        map.flyTo(targetPos, 0.5, { animate: true, duration: 1.0 });
+    }
 
     setTimeout(() => {
         let foundMarker = null;
+
+        // 1. 일반 레이어에서 찾기
         const searchGroups = [layers.spawn, layers.animals, layers.stones, layers.npc, layers.red, layers.pot, layers.box, ...Object.values(layers.mines)];
         searchGroups.forEach(group => {
             group.eachLayer(layer => {
@@ -535,6 +540,7 @@ function moveToLocation(target) {
             });
         });
 
+        // 2. 약초 레이어 특수 처리 (이동 없이 레이어만 활성화)
         if (target.type === 'herb') {
             const chk = document.getElementById(`herb-${target.herbName}`);
             if (chk && !chk.checked) {
@@ -542,22 +548,32 @@ function moveToLocation(target) {
                 layers.herbs[target.herbName].addTo(map);
                 layers.herbMarkers[target.herbName].addTo(map);
             }
+            // 약초는 이동하지 않으므로 팝업을 자동으로 열지 않고 위치만 표시되게 하려면 
+            // 아래 foundMarker 설정을 주석 처리하거나 그대로 두셔도 됩니다.
             foundMarker = layers.herbMarkers[target.herbName].getLayers()[0];
         }
 
+        // 3. 사냥터 레이어에서 찾기
         if (!foundMarker) {
             layers.huntingMarkers.eachLayer(layer => {
                 if (layer instanceof L.Marker && layer.getLatLng().equals(targetPos)) foundMarker = layer;
             });
         }
 
+        // 최종: 마커가 있다면 팝업 표시
         if (foundMarker) {
             if (!map.hasLayer(foundMarker)) foundMarker.addTo(map);
-            foundMarker.openPopup();
+            
+            // 약초인 경우 팝업을 열면 지도가 해당 위치로 살짝 튈 수 있으므로 선택사항입니다.
+            // 위치만 확인하고 싶다면 target.type !== 'herb' 일 때만 openPopup 하도록 할 수 있습니다.
+            foundMarker.openPopup(); 
         } else {
-            L.popup().setLatLng(targetPos)
-                .setContent(`<div style="text-align:center; font-weight:800;">[${target.category}]<br>${target.name}</div>`)
-                .openOn(map);
+            // 마커를 못 찾은 경우 임시 팝업 (약초는 이동 안 하므로 이 부분도 target.type에 따라 조절 가능)
+            if (target.type !== 'herb') {
+                L.popup().setLatLng(targetPos)
+                    .setContent(`<div style="text-align:center; font-weight:800;">[${target.category}]<br>${target.name}</div>`)
+                    .openOn(map);
+            }
         }
 
         if (target.type === 'hunting') {
