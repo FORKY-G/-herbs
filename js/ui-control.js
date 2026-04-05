@@ -384,8 +384,8 @@ sortedHerbData.forEach((herb) => {
     label.style.display = 'flex';
     label.style.alignItems = 'center';
 
-    // 데이터 아이콘 명칭(hub1.png)을 바탕으로 새 파일명(hub-1.png) 생성
-    const listIcon = herb.icon.replace('hub', 'hub-'); 
+    // [수정 포인트] hub1.png 데이터를 hub-1.png 파일로 안전하게 매칭
+    const listIcon = herb.file ? herb.file.replace('hub', 'hub-') : "";
 
     label.innerHTML = `
         <input type="checkbox" id="herb-${herb.name}"> 
@@ -548,6 +548,24 @@ document.getElementById('reset-hunt').addEventListener('click', function(e) {
         if (chk && chk.checked) {
             chk.checked = false;
             map.removeLayer(layers.hunting[area.name]);
+        }
+    });
+});
+
+// [18] 목록 초기화 시스템
+document.getElementById('reset-hunt').addEventListener('click', function(e) {
+    e.stopPropagation();
+    huntingGrounds.forEach(area => {
+        const chk = document.getElementById(`hunt-${area.name}`);
+        if (chk && chk.checked) {
+            chk.checked = false;
+            map.removeLayer(layers.hunting[area.name]);
+            // 해당 영역의 마커도 지도에서 제거
+            map.eachLayer(layer => {
+                if (layer instanceof L.Marker && layer.getPopup() && layer.getPopup().getContent().includes(area.name)) {
+                    map.removeLayer(layer);
+                }
+            });
         }
     });
 });
