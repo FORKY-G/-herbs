@@ -1,10 +1,21 @@
-// map-logic.js
+// map-logic.js 상단 부분 수정
 
 const map = L.map('map', {
     crs: L.CRS.Simple,
     zoomSnap: 0,
-    maxZoom: 3
+    maxZoom: 3,
+    attributionControl: false // 1. 기본 리플렛 로고와 국기를 비활성화합니다.
 });
+
+// 2. 새로운 커스텀 저작권(Attribution) 컨트롤을 추가합니다.
+L.control.attribution({
+    prefix: '<img src="images/forky.png" style="width:15px; vertical-align:middle; margin-right:3px;"> forky'
+}).addTo(map);
+
+// --- 이후 기존 코드는 동일하게 유지 ---
+// 웹에 띄운 이미지의 실제 픽셀 크기
+const webImgSize = 7300; 
+// ... 생략 ...
 
 // 웹에 띄운 이미지의 실제 픽셀 크기
 const webImgSize = 7300; 
