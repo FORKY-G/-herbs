@@ -9,7 +9,7 @@ const map = L.map('map', {
 
 // 2. 새로운 커스텀 저작권(Attribution) 컨트롤을 추가합니다.
 L.control.attribution({
-    prefix: '<img src="images/forky.png" style="width:15px; vertical-align:middle; margin-right:3px;"> forky'
+    prefix: '<img src="images/forky.png" style="width:15px; vertical-align:middle; margin-right:3px;"> forky_G'
 }).addTo(map);
 
 // --- 이후 기존 코드는 동일하게 유지 ---
