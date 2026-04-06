@@ -1,4 +1,4 @@
-/ 1. 지도 초기 설정 및 커스텀 저작권 추가
+// 1. 지도 초기 설정 및 커스텀 저작권 추가
 const map = L.map('map', {
     crs: L.CRS.Simple,
     zoomSnap: 0,
