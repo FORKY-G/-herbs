@@ -331,11 +331,10 @@
             }
         }
 
-       // [1] 페이지 로드 시 실행
+       // [1] 페이지 로드 시 공지사항 표시 여부 결정
 window.addEventListener('load', function() {
     const isHidden = localStorage.getItem('hideNotice');
     const modal = document.getElementById('notice-modal');
-    
     if (modal) {
         if (isHidden === 'true') {
             modal.style.display = 'none';
@@ -345,11 +344,10 @@ window.addEventListener('load', function() {
     }
 });
 
-// [2] 공지사항 닫기 함수
+// [2] 공지사항 닫기 및 '다시 보지 않기' 저장
 function closeNotice() {
     const modal = document.getElementById('notice-modal');
     const checkbox = document.getElementById('stop-showing');
-    
     if (modal) {
         if (checkbox && checkbox.checked) {
             localStorage.setItem('hideNotice', 'true'); 
@@ -358,37 +356,33 @@ function closeNotice() {
     }
 }
 
-// [3] 중요: 팝업 내부 클릭 시 지도로 클릭 이벤트가 전달되는 것을 완전히 차단
+// [3] 강력 방어: 팝업 내부 클릭 시 지도로 클릭이 전달되지 않게 차단
 const noticeModal = document.getElementById('notice-modal');
 if (noticeModal) {
-    // 팝업 검은 배경을 클릭했을 때만 닫히게 설정 (원치 않으면 이 블록 삭제)
+    // 배경 클릭 시 닫기
     noticeModal.addEventListener('click', function(e) {
         if (e.target === this) closeNotice();
     });
 
-    // 팝업 하얀 박스 내부를 클릭했을 때는 아무 일도 일어나지 않게 차단 (버블링 방지)
+    // 하얀 박스(modal-content) 내부 클릭 시 지도 이벤트 전파 방지
     const noticeContent = noticeModal.querySelector('.modal-content');
     if (noticeContent) {
         noticeContent.addEventListener('click', function(e) {
-            e.stopPropagation(); // 클릭 이벤트가 지도로 넘어가지 않게 막음
+            e.stopPropagation(); 
         });
     }
 }
 
-// [4] 지도 클릭 이벤트에서 팝업 영향 제거
+// [4] 지도 클릭 시 사이드바만 닫히도록 기존 코드 수정 유지
 if (typeof map !== 'undefined') {
     map.on('click', () => {
-        // 메뉴 사이드바만 닫기
         if (sidebar && sidebar.classList.contains('active')) {
             sidebar.classList.remove('active');
             toggleBtn.innerText = '▼ 한월메뉴 열기';
         }
         if (searchResultsDiv) searchResultsDiv.style.display = 'none';
-        
-        // 여기에 closeNotice()가 절대 포함되지 않도록 확인하세요!
     });
 }
-
         bindAccordion('hunt-accordion-btn', 'hunt-accordion-content');
         bindAccordion('herb-accordion-btn', 'herb-accordion-content');
     </script>
