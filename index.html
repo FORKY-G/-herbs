@@ -118,19 +118,22 @@ padding: 12px;
 /* [수정] 좌표 복사 알림창 디자인 개선 */
 #copy-toast { 
     position: fixed; 
-    top: 100px; /* 화면 상단에서 100px 내려온 위치 */
+    top: 100px; 
     left: 50%; 
     transform: translateX(-50%); 
-    background-color: #ffd700; /* 한월서버 포인트 컬러 (황금색) */
-    color: #000; /* 글자는 검정색으로 대비 상향 */
+    background-color: #ffd700; 
+    color: #000; 
     padding: 10px 24px; 
     border: 2px solid #000; 
-    box-shadow: 4px 4px 0px rgba(0,0,0,0.3); /* 네오 브루탈리즘 스타일 통일 */
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.3); 
     font-size: 15px; 
     font-weight: 900; 
-    z-index: 11000; /* 공지사항 팝업보다 더 위에 뜨도록 설정 */
+    z-index: 11000; 
     display: none; 
     border-radius: 4px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 </style>
 </head>
@@ -139,9 +142,9 @@ padding: 12px;
 
 <div id="map"></div>
 
-<div id="copy-toast" style="display: none; align-items: center; justify-content: center; gap: 10px;">
+<div id="copy-toast">
     <img src="images/forky.png" style="width: 25px; height: 25px; object-fit: contain;">
-    <span id="toast-text" style="white-space: nowrap;">복사 완료!</span>
+    <span id="toast-text">복사 완료!</span>
 </div>
 
 <div id="controls-wrapper">
@@ -240,6 +243,12 @@ const sidebar = document.getElementById('controls');
 const toggleBtn = document.getElementById('toggle-sidebar');
 const searchResultsDiv = document.getElementById('search-results');
 
+// [추가] 공지사항 닫기 함수 (에러 방지용)
+function closeNotice() {
+    const modal = document.getElementById('notice-modal');
+    if (modal) modal.style.display = 'none';
+}
+
 function toggleSidebar() {
 if (!sidebar) return;
 sidebar.classList.toggle('active');
@@ -268,7 +277,8 @@ const content = document.getElementById(contentId);
 if (btn && content) {
 btn.addEventListener('click', function() {
 content.classList.toggle('active');
-this.querySelector('span').innerText = content.classList.contains('active') ? '▲' : '▼';
+const icon = this.querySelector('span');
+if(icon) icon.innerText = content.classList.contains('active') ? '▲' : '▼';
 });
 }
 }
