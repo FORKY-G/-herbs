@@ -347,8 +347,7 @@ function closeNotice() {
     const modal = document.getElementById('notice-modal');
     if (modal) {
         modal.style.display = 'none';
-        // 만약 '다시 보지 않기' 기능을 활성화하고 싶다면 아래 주석을 해제하세요.
-        // localStorage.setItem('hideNotice', 'true'); 
+        localStorage.setItem('hideNotice', 'true'); 
     }
 }
 
