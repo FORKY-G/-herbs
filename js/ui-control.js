@@ -76,32 +76,14 @@ color: mineColors[colorKey], weight: 3, opacity: 0, dashArray: '7, 10'
 }).addTo(layers.mines[colorKey]); 
 });
 
-// [4] 좌표 복사 함수 (안전 모드)
+// [4] 좌표 복사 함수
 window.copyCoords = (x, y, z) => {
-    const text = `${x} ${y} ${z}`; 
-    navigator.clipboard.writeText(text).then(() => {
-        const toast = document.getElementById('copy-toast');
-        // toast-text가 없어도 에러가 나지 않도록 체크합니다.
-        const toastText = document.getElementById('toast-text');
-        
-        if (toast) {
-            // 만약 toastText(span)가 있다면 거기 글자를 바꾸고, 
-            // 없다면 그냥 toast 자체의 글자를 바꿉니다.
-            if (toastText) {
-                toastText.innerText = `복사 완료!`;
-            } else {
-                toast.innerText = `복사 완료!`;
-            }
-            
-            toast.style.display = 'flex'; 
-            
-            setTimeout(() => { 
-                toast.style.display = 'none'; 
-            }, 1500);
-        }
-    }).catch(err => {
-        console.error('복사 실패:', err);
-    });
+const text = `${x} ${y} ${z}`; 
+navigator.clipboard.writeText(text).then(() => {
+const toast = document.getElementById('copy-toast');
+toast.style.display = 'block';
+setTimeout(() => { toast.style.display = 'none'; }, 1500);
+});
 };
 
 // [5] 십이지신 마커 생성
@@ -714,32 +696,30 @@ L.popup().setLatLng(targetPos)
 
 // [18] 목록 초기화 시스템
 document.getElementById('reset-hunt').addEventListener('click', function(e) {
-    e.stopPropagation();
-    huntingGrounds.forEach(area => {
-        const chk = document.getElementById(`hunt-${area.name}`);
-        if (chk && chk.checked) {
-            chk.checked = false;
-            map.removeLayer(layers.hunting[area.name]);
-            map.eachLayer(layer => {
-                if (layer instanceof L.Marker && layer.getPopup() && layer.getPopup().getContent().includes(area.name)) {
-                    map.removeLayer(layer);
-                }
-            });
-        }
-    });
+e.stopPropagation();
+huntingGrounds.forEach(area => {
+const chk = document.getElementById(`hunt-${area.name}`);
+if (chk && chk.checked) {
+chk.checked = false;
+map.removeLayer(layers.hunting[area.name]);
+// 해당 영역의 마커도 지도에서 제거
+map.eachLayer(layer => {
+if (layer instanceof L.Marker && layer.getPopup() && layer.getPopup().getContent().includes(area.name)) {
+map.removeLayer(layer);
+}
 });
 
 document.getElementById('reset-herb').addEventListener('click', function(e) {
-    e.stopPropagation();
-    sortedHerbData.forEach(herb => {
-        const chk = document.getElementById(`herb-${herb.name}`);
-        if (chk && chk.checked) {
-            chk.checked = false;
-            map.removeLayer(layers.herbs[herb.name]);
-            map.removeLayer(layers.herbMarkers[herb.name]);
-        }
-    });
-    map.closePopup();
+e.stopPropagation();
+sortedHerbData.forEach(herb => {
+const chk = document.getElementById(`herb-${herb.name}`);
+if (chk && chk.checked) {
+chk.checked = false;
+map.removeLayer(layers.herbs[herb.name]);
+map.removeLayer(layers.herbMarkers[herb.name]);
+}
+});
+map.closePopup();
 });
 
 // 팝업 잘림 방지 (기존 유지)
