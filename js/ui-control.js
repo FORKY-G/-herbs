@@ -76,18 +76,22 @@ color: mineColors[colorKey], weight: 3, opacity: 0, dashArray: '7, 10'
 }).addTo(layers.mines[colorKey]); 
 });
 
-// [4] 좌표 복사 함수 (ui-control.js)
+// [4] 좌표 복사 함수 (아이콘 대응 버전)
 window.copyCoords = (x, y, z) => {
     const text = `${x} ${y} ${z}`; 
     navigator.clipboard.writeText(text).then(() => {
         const toast = document.getElementById('copy-toast');
-        toast.innerText = `복사 완료!`; // 어떤 좌표인지 표시해주면 더 친절함!
-        toast.style.display = 'block';
+        const toastText = document.getElementById('toast-text');
         
-        // 1.5초 뒤에 사라짐
-        setTimeout(() => { 
-            toast.style.display = 'none'; 
-        }, 1500);
+        if (toast && toastText) {
+            toastText.innerText = `복사 완료: ${text}`;
+            toast.style.display = 'flex'; // block 대신 flex를 써야 아이콘이랑 정렬이 예뻐요!
+            
+            // 1.5초 뒤에 사라짐
+            setTimeout(() => { 
+                toast.style.display = 'none'; 
+            }, 1500);
+        }
     }).catch(err => {
         console.error('복사 실패:', err);
     });
