@@ -81,10 +81,25 @@ window.copyCoords = (x, y, z) => {
     const text = `${x} ${y} ${z}`; 
     navigator.clipboard.writeText(text).then(() => {
         const toast = document.getElementById('copy-toast');
+        const toastText = document.getElementById('toast-text');
+        
         if (toast) {
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 1500);
+            // 글자 태그가 있으면 글자를 바꾸고, 없으면 상자 자체에 글자를 씁니다 (에러 방지)
+            if (toastText) {
+                toastText.innerText = "복사 완료!";
+            } else {
+                toast.innerText = "복사 완료!";
+            }
+            
+            // 아이콘과 글자가 나란히 보이게 flex로 켭니다
+            toast.style.display = 'flex';
+            
+            setTimeout(() => { 
+                toast.style.display = 'none'; 
+            }, 1500);
         }
+    }).catch(err => {
+        console.error('복사 실패:', err);
     });
 };
 
