@@ -328,18 +328,37 @@
             }
         }
 
-        // [신규] 공지사항 닫기 함수
+        // [1] 페이지 로드 시 실행 (팝업 표시 여부 결정)
+window.addEventListener('load', function() {
+    const isHidden = localStorage.getItem('hideNotice');
+    const modal = document.getElementById('notice-modal');
+    
+    if (modal) {
+        if (isHidden === 'true') {
+            modal.style.display = 'none';
+        } else {
+            modal.style.display = 'flex'; // 저장된 값이 없으면 보여줌
+        }
+    }
+});
+
+// [2] 공지사항 닫기 함수
 function closeNotice() {
     const modal = document.getElementById('notice-modal');
     if (modal) {
         modal.style.display = 'none';
+        // 만약 '다시 보지 않기' 기능을 활성화하고 싶다면 아래 주석을 해제하세요.
+        // localStorage.setItem('hideNotice', 'true'); 
     }
 }
 
-// 팝업 배경 클릭 시에도 닫히게 하려면 추가
-document.getElementById('notice-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeNotice();
-});
+// [3] 배경 클릭 시 닫기 (선택 사항)
+const noticeModal = document.getElementById('notice-modal');
+if (noticeModal) {
+    noticeModal.addEventListener('click', function(e) {
+        if (e.target === this) closeNotice();
+    });
+}
 
         bindAccordion('hunt-accordion-btn', 'hunt-accordion-content');
         bindAccordion('herb-accordion-btn', 'herb-accordion-content');
