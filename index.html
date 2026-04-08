@@ -243,9 +243,12 @@ padding: 12px;
                 ※ 자세한 업데이트 내역은 서버 디스코드를 이용해주세요.
             </p>
         </div>
-        <div style="margin-top: 20px; text-align: right;">
-            <button onclick="closeNotice()" style="padding: 8px 24px; background: #000; color: #fff; border: none; font-weight: 900; cursor: pointer; font-family: 'Pretendard';">확인</button>
-        </div>
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <label style="font-size: 12px; color: #666; cursor: pointer; display: flex; align-items: center; font-weight: 700;">
+        <input type="checkbox" id="stop-showing" style="margin-right: 5px; cursor: pointer;"> 오늘 다시 보지 않기
+    </label>
+    <button onclick="closeNotice()" style="padding: 8px 24px; background: #000; color: #fff; border: none; font-weight: 900; cursor: pointer; font-family: 'Pretendard';">확인</button>
+</div>
     </div>
 </div>
 
@@ -259,6 +262,37 @@ const sidebar = document.getElementById('controls');
 const toggleBtn = document.getElementById('toggle-sidebar');
 const searchResultsDiv = document.getElementById('search-results');
 
+// [1] 공지사항 관련 함수 (여기에 정의되어야 확인 버튼이 작동합니다)
+function closeNotice() {
+    const modal = document.getElementById('notice-modal');
+    const checkbox = document.getElementById('stop-showing'); // 체크박스 ID
+    
+    if (modal) {
+        // 체크박스가 있고, 체크된 상태라면 브라우저에 저장
+        if (checkbox && checkbox.checked) {
+            localStorage.setItem('hideNotice', 'true');
+        }
+        modal.style.display = 'none';
+    }
+}
+
+// [2] 페이지 로드 시 '다시 보지 않기' 확인
+window.addEventListener('load', function() {
+    const isHidden = localStorage.getItem('hideNotice');
+    const modal = document.getElementById('notice-modal');
+    if (modal && isHidden === 'true') {
+        modal.style.display = 'none';
+    }
+});
+
+// [3] 배경 클릭 시 닫기 방지 및 내부 클릭 전파 차단
+const noticeModal = document.getElementById('notice-modal');
+if (noticeModal) {
+    // 배경(어두운 부분) 클릭해도 안 닫히게 하고 싶으면 아래 줄 주석 처리
+    // noticeModal.addEventListener('click', (e) => { if(e.target === noticeModal) closeNotice(); });
+}
+    
+    
 function toggleSidebar() {
 if (!sidebar) return;
 sidebar.classList.toggle('active');
