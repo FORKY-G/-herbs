@@ -13,15 +13,16 @@
         #map { width: 100vw; height: 100vh; z-index: 1; }
 
         /* [컨트롤 패널 레이아웃] */
-        #controls-wrapper {
-            position: fixed;
-            top: 15px; right: 150px; 
-            z-index: 1000;
-            display: flex;
-            flex-direction: row-reverse;
-            align-items: flex-start;
-            gap: 10px;
-        }
+       #controls-wrapper {
+    position: fixed;
+    top: 15px; 
+    right: 20px; /* 위치가 너무 왼쪽이면 숫자를 조절하세요 */
+    z-index: 1000;
+    display: flex;
+    flex-direction: row; /* 왼쪽에서 오른쪽 순서로 배치 */
+    align-items: center; /* ★ 세로 중앙 정렬 핵심 ★ */
+    gap: 12px; /* 요소 사이 간격 */
+}
 
         /* [비급 정보창 스타일] */
         #skill-btn {
@@ -66,15 +67,19 @@
 
         /* [사이드바 메뉴] */
         #toggle-sidebar {
-            background: #fff;
-            border: 2px solid #000;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-weight: 900;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
-            font-size: 14px;
-            white-space: nowrap;
-        }
+    background: #fff;
+    border: 2px solid #000;
+    padding: 7px 12px; /* 다른 입력창과 높이를 맞추기 위해 패딩 조정 */
+    cursor: pointer;
+    font-weight: 900;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+    font-size: 14px;
+    white-space: nowrap;
+    height: 38px; /* 높이 고정으로 일체감 부여 */
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+}
         #controls {
             position: absolute;
             top: 45px; right: 0;
@@ -170,26 +175,26 @@
     </div>
 
     <div id="controls-wrapper">
-        <div id="toggle-sidebar">▼ 한월메뉴 열기</div>
-
-        <div id="search-container" style="display: flex; align-items: center; gap: 10px; position: relative;">
-    
     <a href="https://jeongsh214.github.io/herb_calculator/index.html" target="_blank" 
        style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #000; transition: transform 0.1s;"
        onmouseover="this.style.transform='scale(1.03)'" 
        onmouseout="this.style.transform='scale(1)'">
-        
-        <img src="images/herb.png" style="width: 38px; height: 38px; border: 2px solid #000; background: #fff; box-shadow: 3px 3px 0px rgba(0,0,0,0.2); cursor: pointer;" alt="약초조합기">
-        
-        <span style="font-size: 13px; font-weight: 900; background: #fff; border: 2px solid #000; padding: 7px 12px; box-shadow: 3px 3px 0px rgba(0,0,0,0.2); white-space: nowrap;">
+        <img src="images/herb.png" style="width: 38px; height: 38px; border: 2px solid #000; background: #fff; box-shadow: 3px 3px 0px rgba(0,0,0,0.2); cursor: pointer;" alt="약초">
+        <span style="font-size: 13px; font-weight: 900; background: #fff; border: 2px solid #000; padding: 7px 12px; box-shadow: 3px 3px 0px rgba(0,0,0,0.2); white-space: nowrap; height: 38px; display: flex; align-items: center; box-sizing: border-box;">
             약초조합계산기 ◀
         </span>
     </a>
 
-    <div style="position: relative;">
+    <div style="position: relative; display: flex; align-items: center;">
         <input type="text" id="search-input" placeholder="정보 및 위치 검색..." 
-               style="width: 180px; padding: 8px 10px; border: 2px solid #000; font-family: 'Pretendard', sans-serif; font-weight: 700; outline: none; background: #fff;">
+               style="width: 180px; height: 38px; padding: 0 10px; border: 2px solid #000; font-family: 'Pretendard', sans-serif; font-weight: 700; outline: none; background: #fff; box-sizing: border-box;">
         <div id="search-results"></div>
+    </div>
+
+    <div style="position: relative;">
+        <div id="toggle-sidebar">▼ 한월메뉴 열기</div>
+        <div id="controls">
+            </div>
     </div>
 </div>
 
