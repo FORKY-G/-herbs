@@ -175,7 +175,7 @@ const npcData = [
     { 
     name: "명인대장장이", 
     x: -7047, y: 74, z: -727, 
-    file: "mungin.png", quest: "부러진보검(몰락한소가주)", item: "백련강 3개",
+    file: "mungin.png", quest: "부러진보검(몰락한소가주)", item: "백련정강 3개",
     crafting: [
         { name: "송진칠료", materials: "송진덩어리1 + 적동괴1 + 갈옥1 + 돌덩어리2", img: "item1.png"}, 
         { name: "와편분말", materials: "깨진기와1 + 돌덩어리5 + 철1 + 적동석1", img: "item2.png"}, 
