@@ -252,9 +252,28 @@ potItems.forEach((pot) => {
 // [12] 의문의 상자 마커 생성
 mysteryBoxes.forEach((box) => {
     const pos = mcToPx(box.x, box.z);
-    const marker = L.marker(pos, { icon: boxIcon }).addTo(layers.box);
+    
+    // ★ 강조하고 싶은 상자의 이름을 여기에 넣으세요!
+    // 예: '의문의 상자(기문부적)', '의문의 상자(1번)' 등...
+    const specialBoxes = ["의문의 상자(기문부적)", "의문의 상자(강화목)", "의문의 상자(진입입구)"]; 
+    
+    let markerClass = "mine-marker"; // 기본 광산 스타일 사각형 사용
+    if (specialBoxes.includes(box.name)) {
+        markerClass += " special-mine"; // 광산과 똑같이 하얗게 번쩍이는 효과 추가
+    }
+
+    // 아이콘 생성 (광산과 크기를 똑같이 18x18로 맞췄습니다)
+    const boxIconDiv = L.divIcon({ 
+        className: markerClass, 
+        iconSize: [18, 18], 
+        iconAnchor: [9, 9] 
+    });
+
+    const marker = L.marker(pos, { icon: boxIconDiv }).addTo(layers.box);
+    
     const itemInfo = box.item ? `<div style="margin-bottom:4px;"><span style="color:#666; font-weight:700;">획득아이템:</span> ${box.item}</div>` : '';
     const entranceInfo = box.entrance ? `<div style="margin-top:4px; padding: 4px; background: #fff1f1; border-radius: 4px; border: 1px dashed #d00;"><span style="color:#d00; font-weight:800;">[진입입구]</span><br><span style="font-size:11px; font-weight:700;">${box.entrance}</span></div>` : '';
+    
     const popupContent = `
         <div style="text-align:center; min-width:200px; color:#000; padding: 0; line-height: 1.3;">
             <div style="font-size:18px; font-weight:800; border-bottom:2px solid #000; padding: 5px 0; margin-bottom: 10px;">${box.name}</div>
