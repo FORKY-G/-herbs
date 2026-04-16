@@ -682,75 +682,119 @@ window.toggleBlacksmithWindow = function() {
     }
 };
 
-// [20] 대장장이 데이터를 UI로 그려주는 함수
+// [20] 대장장이 데이터를 그리드 형태로 그려주는 함수
 function renderBlacksmithData() {
     const container = document.getElementById('blacksmith-list-content');
     if (!container) return;
     container.innerHTML = ''; // 초기화
 
-    for (const level in blacksmithData) {
-        // [큰 카테고리: 레벨별 칸]
-        const levelGroup = document.createElement('div');
-        levelGroup.style.marginBottom = '10px';
+    // 1. 그리드 컨테이너 생성 (3x2 배열)
+    const gridWrapper = document.createElement('div');
+    gridWrapper.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    `;
 
-        const header = document.createElement('div');
-        header.className = 'accordion-header';
-        header.innerHTML = `${level} 장비 리스트 <span>▼</span>`;
-        header.onclick = function() {
-            const content = this.nextElementSibling;
-            content.style.display = (content.style.display === 'block') ? 'none' : 'block';
-            this.querySelector('span').innerText = (content.style.display === 'block') ? '▲' : '▼';
+    // 2. 각 레벨별 네모 버튼 생성
+    for (const level in blacksmithData) {
+        const levelBtn = document.createElement('div');
+        levelBtn.style.cssText = `
+            background: #fff;
+            border: 2px solid #000;
+            padding: 15px 5px;
+            text-align: center;
+            font-weight: 900;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+            transition: all 0.1s;
+        `;
+        levelBtn.innerText = level;
+
+        // 마우스 오버 효과
+        levelBtn.onmouseover = function() { this.style.background = '#f0f0f0'; };
+        levelBtn.onmouseout = function() { 
+            if(this.dataset.selected !== "true") this.style.background = '#fff'; 
         };
 
-        const content = document.createElement('div');
-        content.style.display = 'none';
-        content.style.padding = '10px';
-        content.style.border = '1px solid #000';
-        content.style.background = '#fcfcfc';
-
-        // 방어구 / 무기 / 반지 등 분류
-        for (const category in blacksmithData[level]) {
-            const catData = blacksmithData[level][category];
+        // 클릭 시 하단에 상세 정보 표시
+        levelBtn.onclick = function() {
+            // 모든 버튼 초기화
+            Array.from(gridWrapper.children).forEach(btn => {
+                btn.style.background = '#fff';
+                btn.dataset.selected = "false";
+            });
+            // 선택된 버튼 강조
+            this.style.background = '#ffd700';
+            this.dataset.selected = "true";
             
-            const catTitle = document.createElement('div');
-            catTitle.style.cssText = 'font-weight:900; background:#eee; padding:5px; margin-top:10px; border-left:4px solid #000; font-size:14px;';
-            catTitle.innerText = `[${category}]`;
-            content.appendChild(catTitle);
+            showLevelDetail(level);
+        };
 
-            // 재료 안내 (장신구 제외)
-            if (catData.materials) {
-                const matInfo = document.createElement('div');
-                matInfo.style.cssText = 'font-size:11px; color:#d00; margin:5px 0 10px 5px; font-weight:700; border-bottom:1px dashed #ccc; padding-bottom:5px;';
-                matInfo.innerHTML = `재료: ${catData.materials}<br>주문서 가능 횟수: ${catData.scrollCount}회`;
-                content.appendChild(matInfo);
-            }
+        gridWrapper.appendChild(levelBtn);
+    }
 
-            // [장비 이름 칸]
-            const items = (level === "장신구") ? catData : catData.items;
-            for (const itemName in items) {
-                // 장신구의 경우 레벨이 한 번 더 들어감 (30제, 70제 등)
-                if (level === "장신구") {
-                    const subTitle = document.createElement('div');
-                    subTitle.style.cssText = 'font-size:12px; font-weight:800; color:#666; margin:10px 0 5px 5px;';
-                    subTitle.innerText = `▶ ${itemName}`;
-                    content.appendChild(subTitle);
+    container.appendChild(gridWrapper);
 
-                    for (const realItem in items[itemName]) {
-                        content.appendChild(createItemUI(realItem, items[itemName][realItem], ["정보"]));
-                    }
-                } else {
-                    const parts = (category === "방어구") ? ["투구", "갑옷", "허리띠", "신발"] : ["무기"];
-                    content.appendChild(createItemUI(itemName, items[itemName], parts));
+    // 3. 상세 내용이 표시될 영역 생성
+    const detailContainer = document.createElement('div');
+    detailContainer.id = 'blacksmith-detail-area';
+    container.appendChild(detailContainer);
+}
+
+// [20-1] 버튼 클릭 시 하단에 리스트를 그려주는 함수
+function showLevelDetail(level) {
+    const detailArea = document.getElementById('blacksmith-detail-area');
+    detailArea.innerHTML = ''; // 초기화
+
+    const data = blacksmithData[level];
+    
+    // 제목 설정 (제작 단어 삭제)
+    const header = document.createElement('div');
+    header.style.cssText = 'font-weight:900; font-size:16px; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:15px; color:#d00;';
+    header.innerText = `▶ ${level} 리스트`;
+    detailArea.appendChild(header);
+
+    for (const category in data) {
+        const catData = data[category];
+        
+        // 분류 제목 (방어구, 무기 등)
+        const catTitle = document.createElement('div');
+        catTitle.style.cssText = 'font-weight:900; background:#eee; padding:5px; margin-top:10px; border-left:4px solid #000; font-size:14px;';
+        catTitle.innerText = `[${category}]`;
+        detailArea.appendChild(catTitle);
+
+        // 재료 안내
+        if (catData.materials) {
+            const matInfo = document.createElement('div');
+            matInfo.style.cssText = 'font-size:11px; color:#333; margin:5px 0 10px 5px; font-weight:700; background:#f9f9f9; padding:8px; border:1px solid #ddd; line-height:1.4;';
+            matInfo.innerHTML = `재료: ${catData.materials}<br>주문서 가능 횟수: ${catData.scrollCount}회`;
+            detailArea.appendChild(matInfo);
+        }
+
+        const items = (level === "장신구") ? catData : catData.items;
+        for (const itemName in items) {
+            if (level === "장신구") {
+                // 장신구(반지/귀걸이) 소제목 처리
+                const subTitle = document.createElement('div');
+                subTitle.style.cssText = 'font-size:12px; font-weight:800; color:#666; margin:10px 0 5px 5px; border-bottom:1px solid #eee;';
+                subTitle.innerText = `▶ ${itemName}`;
+                detailArea.appendChild(subTitle);
+
+                for (const realItem in items[itemName]) {
+                    detailArea.appendChild(createItemUI(realItem, items[itemName][realItem], ["정보"]));
                 }
+            } else {
+                const parts = (category === "방어구") ? ["투구", "갑옷", "허리띠", "신발"] : ["무기"];
+                detailArea.appendChild(createItemUI(itemName, items[itemName], parts));
             }
         }
-        levelGroup.appendChild(header);
-        levelGroup.appendChild(content);
-        container.appendChild(levelGroup);
     }
 }
 
-// 아이템 상세 스펙 생성 도우미 함수
+// [20-2] 아이템 상세 스펙 생성 도우미 함수 (다겸님 기존 로직 유지 및 보정)
 function createItemUI(name, data, parts) {
     const itemWrapper = document.createElement('div');
     itemWrapper.style.marginBottom = '5px';
@@ -768,12 +812,10 @@ function createItemUI(name, data, parts) {
         const row = document.createElement('div');
         row.style.marginBottom = '12px';
 
-        // 아이콘 자리 (네모칸)
         const icon = document.createElement('div');
         icon.style.cssText = 'width:42px; height:42px; border:2px solid #000; display:inline-flex; align-items:center; justify-content:center; background:#f4f4f4; cursor:pointer; font-size:10px; font-weight:900;';
         icon.innerText = part;
 
-        // 스펙 텍스트
         const spec = document.createElement('div');
         spec.style.cssText = 'font-size:11px; margin-top:6px; display:none; padding-left:5px; line-height:1.5;';
         
