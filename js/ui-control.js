@@ -741,7 +741,7 @@ function showPartDetail(itemName, itemData, parts, parentGrid, isAutoOpen) {
     partArea.appendChild(fixedSpecBox);
 }
 
-// [21] 1단계: 메인 레벨 선택 (3x2)
+// [21] 1단계: 메인 레벨 선택 (수정본)
 function renderBlacksmithData() {
     const container = document.getElementById('blacksmith-list-content');
     if (!container) return;
@@ -752,12 +752,12 @@ function renderBlacksmithData() {
 
     for (const level in blacksmithData) {
         const levelBtn = document.createElement('div');
-        levelBtn.style.cssText = `background: #fff; border: 2px solid #000; padding: 15px 5px; text-align: center; font-weight: 900; cursor: pointer; box-shadow: 3px 3px 0px rgba(0,0,0,0.1);`;
+        levelBtn.className = 'level-btn-style'; // CSS 클래스 연결
         levelBtn.innerText = level;
 
         levelBtn.onclick = function() {
-            Array.from(gridWrapper.children).forEach(btn => btn.style.background = '#fff');
-            this.style.background = '#ffd700';
+            Array.from(gridWrapper.children).forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
             showLevelDetail(level);
         };
         gridWrapper.appendChild(levelBtn);
@@ -826,18 +826,18 @@ function showLevelDetail(level) {
     }
 }
 
-// [23] 장신구 전용 로직
+// [23] 장신구 큰 카테고리 선택 (수정본)
 function renderAccessory(level, catData, detailArea) {
     const typeGrid = document.createElement('div');
     typeGrid.style.cssText = 'display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;';
 
     for (const type in catData) {
         const typeBtn = document.createElement('div');
-        typeBtn.style.cssText = `background: #fff; border: 2px solid #000; padding: 12px; text-align: center; font-weight: 900; cursor: pointer; box-shadow: 3px 3px 0px rgba(0,0,0,0.1);`;
+        typeBtn.className = 'sub-type-btn'; // 서브 버튼 스타일 적용
         typeBtn.innerText = type;
         typeBtn.onclick = function() {
-            Array.from(typeGrid.children).forEach(btn => btn.style.background = '#fff');
-            this.style.background = '#ffd700';
+            Array.from(typeGrid.children).forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
             renderAccessoryLevels(type, catData[type], accessoryMainArea);
         };
         typeGrid.appendChild(typeBtn);
