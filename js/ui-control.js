@@ -665,18 +665,17 @@ if (skillBtn) {
 }
 
 
-// 대장장이 정보
 // [19] 대장장이 정보창 토글 및 렌더링
 window.toggleBlacksmithWindow = function() {
     const win = document.getElementById('blacksmith-window');
     const skillWin = document.getElementById('skill-window');
-    
     if (!win) return;
-    
-    if (win.style.display === 'none') {
-        if (skillWin) skillWin.style.display = 'none'; // 비급창 닫기
+
+    // display가 'none'이거나 비어있을 때('') 창을 엽니다.
+    if (win.style.display === 'none' || win.style.display === '') {
+        if (skillWin) skillWin.style.display = 'none';
         win.style.display = 'block';
-        renderBlacksmithData(); // ★ 창이 열릴 때 데이터를 그립니다.
+        renderBlacksmithData();
     } else {
         win.style.display = 'none';
     }
@@ -719,7 +718,7 @@ function renderBlacksmithData() {
     container.appendChild(detailContainer);
 }
 
-// [20-1] 2단계: 아이템 선택 (1x5 그리드)
+// [20-1] 2단계: 아이템 선택 (1x5 그리드) 
 function showLevelDetail(level) {
     const detailArea = document.getElementById('blacksmith-detail-area');
     detailArea.innerHTML = '';
@@ -729,13 +728,11 @@ function showLevelDetail(level) {
     for (const category in data) {
         const catData = data[category];
         
-        // 분류 제목 (방어구, 무기 등)
         const catTitle = document.createElement('div');
         catTitle.style.cssText = 'font-weight:900; background:#eee; padding:5px; margin-top:15px; border-left:4px solid #000; font-size:13px;';
         catTitle.innerText = `[${category}]`;
         detailArea.appendChild(catTitle);
 
-        // 재료 안내
         if (catData.materials) {
             const matInfo = document.createElement('div');
             matInfo.style.cssText = 'font-size:11px; color:#333; margin:5px 0; font-weight:700; background:#f9f9f9; padding:8px; border:1px solid #ddd;';
@@ -743,21 +740,12 @@ function showLevelDetail(level) {
             detailArea.appendChild(matInfo);
         }
 
-        // 아이템 아이콘 그리드 (1x5)
         const itemGrid = document.createElement('div');
-        itemGrid.style.cssText = `
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
-            margin-top: 10px;
-        `;
+        itemGrid.style.cssText = 'display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 10px;';
 
         const items = (level === "장신구") ? catData : catData.items;
-        
-        // 장신구는 구조가 조금 달라서 예외처리 (30제, 70제 등 소제목)
+
         if (level === "장신구") {
-             // 장신구는 기존 세로 리스트 방식 유지 혹은 필요시 그리드화
-             // 여기서는 요청하신 '장비' 위주로 그리드화 해드릴게요.
              renderAccessory(level, catData, detailArea);
              continue;
         }
@@ -770,10 +758,9 @@ function showLevelDetail(level) {
                 display: flex; flex-direction: column; align-items: center; gap: 5px;
             `;
 
-            // 아이콘 자리 (나중에 png 넣을 곳)
             const iconPlaceholder = document.createElement('div');
             iconPlaceholder.style.cssText = 'width:35px; height:35px; background:#eee; border:1px solid #ccc;';
-            iconPlaceholder.innerText = 'IMG'; // 나중에 <img src="..."> 로 교체
+            iconPlaceholder.innerText = 'IMG';
 
             const nameLabel = document.createElement('div');
             nameLabel.innerText = itemName;
@@ -781,32 +768,30 @@ function showLevelDetail(level) {
             itemBox.appendChild(iconPlaceholder);
             itemBox.appendChild(nameLabel);
 
-            // 클릭 시 하단에 부위별 1x4 그리드 표시
             itemBox.onclick = function() {
-                // 선택 효과
                 Array.from(itemGrid.children).forEach(child => child.style.background = '#fff');
                 this.style.background = '#f1f1f1';
                 
                 const parts = (category === "방어구") ? ["투구", "갑옷", "허리띠", "신발"] : ["무기"];
-                showPartDetail(itemName, items[itemName], parts, itemGrid);
+                
+                // 무기(길이 1)면 자동 오픈 모드로 호출
+                showPartDetail(itemName, items[itemName], parts, itemGrid, (parts.length === 1));
             };
 
             itemGrid.appendChild(itemBox);
         }
         detailArea.appendChild(itemGrid);
 
-        // 부위별 정보가 뜰 영역
         const partArea = document.createElement('div');
         partArea.id = `part-area-${category}`;
         detailArea.appendChild(partArea);
     }
 }
 
-// [20-2] 3단계: 부위별 선택 (1x4 그리드) 수정 버전
-function showPartDetail(itemName, itemData, parts, parentGrid) {
+// [20-2] 3단계: 부위별 선택 및 정보 노출 (통합본)
+function showPartDetail(itemName, itemData, parts, parentGrid, isAutoOpen) {
     const partArea = parentGrid.nextElementSibling;
     partArea.innerHTML = '';
-    // partArea에 position: relative를 주어 기준점을 잡습니다.
     partArea.style.cssText = 'margin-top:15px; padding:10px; background:#fafafa; border:1px solid #eee; position: relative;';
 
     const partTitle = document.createElement('div');
@@ -814,70 +799,56 @@ function showPartDetail(itemName, itemData, parts, parentGrid) {
     partTitle.innerText = `▷ ${itemName} 상세보기`;
     partArea.appendChild(partTitle);
 
-    // 스펙 정보를 표시할 고정창을 미리 하나만 만듭니다.
     const fixedSpecBox = document.createElement('div');
-    fixedSpecBox.id = 'fixed-spec-box';
     fixedSpecBox.style.cssText = `
-        display: none; 
-        font-size: 11px; 
-        background: #fff; 
-        padding: 10px; 
-        border: 2px solid #d35400; 
-        margin-top: 10px; 
-        line-height: 1.5;
-        box-shadow: 3px 3px 5px rgba(0,0,0,0.1);
-        width: calc(100% - 20px); /* 가로 폭을 그리드에 맞게 고정 */
-        box-sizing: border-box;
+        display: none; font-size: 11px; background: #fff; padding: 10px; 
+        border: 2px solid #d35400; margin-top: 10px; line-height: 1.5;
+        box-shadow: 3px 3px 5px rgba(0,0,0,0.1); width: calc(100% - 20px); box-sizing: border-box;
     `;
     
     const partGrid = document.createElement('div');
     partGrid.style.cssText = `
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
+        display: ${isAutoOpen ? 'none' : 'grid'}; 
+        grid-template-columns: repeat(4, 1fr); gap: 8px;
     `;
 
     parts.forEach(part => {
         const partBox = document.createElement('div');
         partBox.style.cssText = 'text-align:center; cursor:pointer;';
-
         const partIcon = document.createElement('div');
         partIcon.style.cssText = 'width:45px; height:45px; border:2px solid #333; background:#fff; margin:0 auto; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900;';
         partIcon.innerText = part;
 
-        partBox.onclick = (e) => {
-            e.stopPropagation();
+        const openSpec = () => {
             const target = (parts[0] === "무기") ? itemData : itemData[part];
             if (target) {
-                // 선택한 부위에 따라 내용만 교체하고 고정창을 보여줍니다.
                 fixedSpecBox.innerHTML = `
-                    <div style="font-weight:900; color:#000; margin-bottom:5px; border-bottom:1px solid #eee;">[${part}] 정보</div>
+                    <div style="font-weight:900; color:#000; margin-bottom:5px; border-bottom:1px solid #eee;">[${isAutoOpen ? itemName : part}] 정보</div>
                     <div style="color:#d35400; font-weight:800;">[스텟] ${target.스텟}</div>
                     <div style="color:#7f8c8d;">[일반] ${target.일반}</div>
                 `;
                 fixedSpecBox.style.display = 'block';
                 
-                // 선택된 아이콘 강조 효과
-                Array.from(partGrid.children).forEach(child => child.firstChild.style.borderColor = '#333');
-                partIcon.style.borderColor = '#d35400';
+                // 강조 효과 (부위 리스트가 보일 때만)
+                if(!isAutoOpen) {
+                    Array.from(partGrid.children).forEach(child => child.firstChild.style.borderColor = '#333');
+                    partIcon.style.borderColor = '#d35400';
+                }
             }
         };
 
+        partBox.onclick = (e) => { e.stopPropagation(); openSpec(); };
         partBox.appendChild(partIcon);
         partGrid.appendChild(partBox);
+
+        if (isAutoOpen) openSpec();
     });
 
     partArea.appendChild(partGrid);
-    partArea.appendChild(fixedSpecBox); // 그리드 바로 아래에 고정창 배치
-}
-    
-    // 바탕 클릭 시 스펙창 닫기
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.spec-popup').forEach(p => p.style.display = 'none');
-    }, {once: true});
+    partArea.appendChild(fixedSpecBox);
 }
 
-// 장신구 전용 렌더러 (기존 방식 유지)
+// [20-3] 장신구 전용 렌더러 및 아이템 UI
 function renderAccessory(level, catData, detailArea) {
     for (const subLevel in catData) {
         const subTitle = document.createElement('div');
@@ -888,6 +859,39 @@ function renderAccessory(level, catData, detailArea) {
             detailArea.appendChild(createItemUI(realItem, catData[subLevel][realItem], ["정보"]));
         }
     }
+}
+
+function createItemUI(name, data, parts) {
+    const itemWrapper = document.createElement('div');
+    itemWrapper.style.marginBottom = '5px';
+    const itemBtn = document.createElement('div');
+    itemBtn.style.cssText = 'padding:8px; border-bottom:1px solid #eee; cursor:pointer; font-weight:700; font-size:13px; color:#333;';
+    itemBtn.innerText = `· ${name}`;
+    const detailBox = document.createElement('div');
+    detailBox.style.cssText = 'display:none; padding:10px; background:#fff; border:1px solid #ddd; margin-bottom:10px;';
+    itemBtn.onclick = () => detailBox.style.display = (detailBox.style.display === 'block') ? 'none' : 'block';
+
+    parts.forEach(part => {
+        const row = document.createElement('div');
+        row.style.marginBottom = '12px';
+        const icon = document.createElement('div');
+        icon.style.cssText = 'width:42px; height:42px; border:2px solid #000; display:inline-flex; align-items:center; justify-content:center; background:#f4f4f4; cursor:pointer; font-size:10px; font-weight:900;';
+        icon.innerText = part;
+        const spec = document.createElement('div');
+        spec.style.cssText = 'font-size:11px; margin-top:6px; display:none; padding-left:5px; line-height:1.5;';
+        const target = (parts[0] === "정보") ? data : data[part];
+        if (target) {
+            spec.innerHTML = `<div style="color:#d35400; font-weight:800;">[스텟] ${target.스텟}</div>
+                              <div style="color:#7f8c8d;">[일반] ${target.일반}</div>`;
+        }
+        icon.onclick = () => spec.style.display = (spec.style.display === 'block') ? 'none' : 'block';
+        row.appendChild(icon);
+        row.appendChild(spec);
+        detailBox.appendChild(row);
+    });
+    itemWrapper.appendChild(itemBtn);
+    itemWrapper.appendChild(detailBox);
+    return itemWrapper;
 }
 
 // [21] 팝업 관리 및 제작 아이템 표시
