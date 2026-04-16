@@ -820,10 +820,10 @@ function createItemUI(name, data, parts) {
         spec.style.cssText = 'font-size:11px; margin-top:6px; display:none; padding-left:5px; line-height:1.5;';
         
         const target = (parts[0] === "무기" || parts[0] === "정보") ? data : data[part];
-        if (target) {
-            spec.innerHTML = `<div style="color:#d35400; font-weight:800;">[스텟] ${target.스텟}</div>
-                              <div style="color:#7f8c8d;">[일반] ${target.일반}</div>`;
-        }
+       if (target) {
+    spec.innerHTML = `<div style="color:#d35400; font-weight:800;">[스텟] ${target.스텟}</div>
+                      <div style="color:#7f8c8d;">[일반] ${target.일반}</div>`;
+}
 
         icon.onclick = () => spec.style.display = (spec.style.display === 'block') ? 'none' : 'block';
 
