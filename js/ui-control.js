@@ -912,29 +912,38 @@ function renderAccessoryLevels(typeName, levelsData, targetArea) {
     targetArea.appendChild(itemShowArea);
 }
 
-// [25] 최종 장신구 아이템 아이콘 표시 (이름 포함 완벽 버전)
+// [25] 최종 장신구 아이템 아이콘 표시 (이미지 경로 완벽 연동)
 function renderAccessoryItems(lvTitle, items, targetArea) {
     targetArea.innerHTML = '';
+    
     const itemGrid = document.createElement('div');
-    itemGrid.style.cssText = 'display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px;';
+    // 장신구도 5열로 예쁘게 정렬하고 삐져나가지 않게 gap 조정
+    itemGrid.style.cssText = 'display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 15px; padding: 0 5px;';
 
     for (const itemName in items) {
-        const itemData = items[itemName];
+        const itemData = items[itemName]; // [중요] 해당 아이템의 전체 데이터(스텟, file 등)를 가져옴
         const itemContainer = document.createElement('div');
-        itemContainer.style.cssText = 'display: flex; flex-direction: column; align-items: center; cursor: pointer;';
+        itemContainer.style.cssText = 'display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 100%;';
 
         const itemBox = document.createElement('div');
         itemBox.className = 'game-item-box'; 
+        // 무기랑 똑같이 48px로 맞췄습니다.
+        itemBox.style.cssText = 'width:48px; height:48px; background: radial-gradient(circle, #5e4b3c 0%, #1a1512 100%); border:2px solid #000; display:flex; align-items:center; justify-content:center; position:relative; box-shadow:inset 0 0 8px rgba(0,0,0,0.8);';
 
-        let accImg = itemData.file ? itemData.file : "IMG";
+        // [핵심] 데이터에 file명이 있으면 이미지를 출력!
         if (itemData.file) {
-            itemBox.innerHTML = `<img src="images/${accImg}" onerror="this.style.display='none'" style="width:85%; height:85%; object-fit:contain;">`;
+            itemBox.innerHTML = `
+                <img src="images/${itemData.file}" onerror="this.style.display='none'" style="width:85%; height:85%; object-fit:contain; position:relative; z-index:2;">
+                <div style="position:absolute; color:#444; font-size:8px; z-index:1;">PNG</div>
+            `;
         } else {
-            itemBox.innerHTML = `<div style="color:#444; font-size:10px; font-weight:900;">IMG</div>`;
+            // 파일명이 없을 때만 예비용 텍스트 출력
+            itemBox.innerHTML = `<div style="color:#eee7c5; font-size:10px; font-weight:900;">IMG</div>`;
         }
 
         const nameLabel = document.createElement('div');
         nameLabel.className = 'game-item-name';
+        nameLabel.style.cssText = 'margin-top:6px; font-size:10px; font-weight:900; color:#ffffff; text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; text-align:center; word-break:keep-all; width:52px;';
         nameLabel.innerText = itemName;
 
         itemContainer.appendChild(itemBox);
@@ -943,14 +952,17 @@ function renderAccessoryItems(lvTitle, items, targetArea) {
         itemContainer.onclick = function() {
             document.querySelectorAll('.game-item-box').forEach(el => el.classList.remove('selected'));
             itemBox.classList.add('selected');
-            showPartDetail(itemName, items[itemName], ["스텟"], itemGrid, true);
+            // 장신구는 부위 선택이 없으므로 ["스텟"] 하나만 바로 띄움
+            showPartDetail(itemName, itemData, ["스텟"], itemGrid, true);
         };
         itemGrid.appendChild(itemContainer);
     }
     targetArea.appendChild(itemGrid);
+    
+    // 상세 정보(스텟)가 들어올 공간 추가
     const infoArea = document.createElement('div');
-    infoArea.className = 'part-detail-area-container'; 
-    targetArea.appendChild(infoArea); 
+    infoArea.className = 'part-detail-area-container';
+    targetArea.appendChild(infoArea);
 }
 
 // [21] 팝업 관리 및 제작 아이템 표시
