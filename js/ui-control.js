@@ -857,27 +857,68 @@ function renderAccessoryLevels(typeName, levelsData, targetArea) {
     targetArea.appendChild(itemShowArea);
 }
 
+// [20-5] 최종 장신구 아이콘 그리드 (에러 해결 및 명인 대장장이 스타일 적용)
 function renderAccessoryItems(lvTitle, items, targetArea) {
-    targetArea.innerHTML = '';
+    targetArea.innerHTML = ''; // 이전 내용 싹 비우기
+    
+    // 1. 정보가 표시될 '도화지'를 먼저 만듭니다 (에러 방지)
+    const infoArea = document.createElement('div');
+    infoArea.className = 'part-detail-area-container'; 
+    infoArea.style.cssText = 'min-height: 5px; margin-top: 10px;';
 
+    // 2. 아이템 그리드 생성
     const itemGrid = document.createElement('div');
-    itemGrid.style.cssText = 'display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 10px;';
+    itemGrid.style.cssText = 'display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px;';
 
     for (const itemName in items) {
-        const itemBox = document.createElement('div');
-        itemBox.style.cssText = `border: 1px solid #000; background: #fff; padding: 8px 2px; text-align: center; cursor: pointer; font-size: 11px; font-weight: 800; display: flex; flex-direction: column; align-items: center; gap: 5px;`;
-        itemBox.innerHTML = `<div style="width:40px; height:40px; background:#f4f4f4; border:1px solid #ccc; display:flex; align-items:center; justify-content:center;">IMG</div><div>${itemName}</div>`;
+        // 아이콘과 이름을 묶을 컨테이너
+        const itemContainer = document.createElement('div');
+        itemContainer.style.cssText = 'display: flex; flex-direction: column; align-items: center; cursor: pointer;';
 
-        itemBox.onclick = function() {
-            Array.from(itemGrid.children).forEach(child => child.style.background = '#fff');
-            this.style.background = '#f1f1f1';
+        // [스타일 적용] 명인 대장장이 배경 (어두운 그라데이션)
+        const itemBox = document.createElement('div');
+        itemBox.className = 'game-item-box'; 
+        // CSS 클래스를 쓰지만, 혹시 모르니 인라인 스타일로도 보강
+        itemBox.style.cssText = `
+            width: 50px; height: 50px; 
+            background: radial-gradient(circle, #5e4b3c 0%, #2a211a 100%);
+            border: 2px solid #000; display: flex; align-items: center; justify-content: center;
+            position: relative; box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        `;
+
+        // 아이콘 이미지 자리
+        const iconImg = document.createElement('div');
+        iconImg.style.cssText = 'width:80%; height:80%; display:flex; align-items:center; justify-content:center; color:#888; font-size:10px; font-weight:900;';
+        iconImg.innerText = 'IMG';
+
+        // 아이템 이름 스타일
+        const nameLabel = document.createElement('div');
+        nameLabel.style.cssText = 'margin-top:6px; font-size:11px; font-weight:800; color:#ddd; text-shadow:1px 1px 2px #000; text-align:center; word-break:keep-all;';
+        nameLabel.innerText = itemName;
+
+        itemBox.appendChild(iconImg);
+        itemContainer.appendChild(itemBox);
+        itemContainer.appendChild(nameLabel);
+
+        // 클릭 이벤트
+        itemContainer.onclick = function() {
+            // 모든 박스에서 선택 효과 제거 후 현재 박스에만 금색 테두리
+            document.querySelectorAll('.game-item-box').forEach(el => {
+                el.style.borderColor = '#000';
+                el.style.boxShadow = 'inset 0 0 5px rgba(0,0,0,0.5)';
+            });
+            itemBox.style.borderColor = '#ffd700';
+            itemBox.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+            
+            // ★ showPartDetail 호출 (장신구는 스텟만 있으므로 ["스텟"] 전달)
             showPartDetail(itemName, items[itemName], ["스텟"], itemGrid, true);
         };
-        itemGrid.appendChild(itemBox);
+        itemGrid.appendChild(itemContainer);
     }
     
+    // 3. 순서대로 화면에 붙이기 (이 순서가 중요합니다!)
     targetArea.appendChild(itemGrid);
-    targetArea.appendChild(infoArea);
+    targetArea.appendChild(infoArea); 
 }
 
 // [21] 팝업 관리 및 제작 아이템 표시
