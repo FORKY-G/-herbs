@@ -826,16 +826,20 @@ function showLevelDetail(level) {
     }
 }
 
-// [23] 장신구 큰 카테고리 선택 (수정본)
+// [23] 장신구 큰 카테고리 (반지/귀걸이 선택 그리드 복구)
 function renderAccessory(level, catData, detailArea) {
     const typeGrid = document.createElement('div');
+    // 반지/귀걸이가 나란히 나오도록 그리드 설정
     typeGrid.style.cssText = 'display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;';
 
     for (const type in catData) {
         const typeBtn = document.createElement('div');
-        typeBtn.className = 'sub-type-btn'; // 서브 버튼 스타일 적용
+        // [수정] 위에서 만든 어두운 버튼 클래스 적용
+        typeBtn.className = 'level-btn-style'; 
         typeBtn.innerText = type;
+
         typeBtn.onclick = function() {
+            // 모든 버튼에서 active 제거 후 현재 버튼에 추가
             Array.from(typeGrid.children).forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
             renderAccessoryLevels(type, catData[type], accessoryMainArea);
@@ -843,39 +847,50 @@ function renderAccessory(level, catData, detailArea) {
         typeGrid.appendChild(typeBtn);
     }
     detailArea.appendChild(typeGrid);
+
+    // 하위 레벨(30제 등)이 그려질 공간
     const accessoryMainArea = document.createElement('div');
     detailArea.appendChild(accessoryMainArea);
 }
 
+// [24] 장신구 레벨 선택 (30제, 70제 등 그리드 복구)
 function renderAccessoryLevels(typeName, levelsData, targetArea) {
     targetArea.innerHTML = ''; 
     const lvGrid = document.createElement('div');
+    // 레벨 버튼들이 3열로 예쁘게 나오도록 설정
     lvGrid.style.cssText = 'display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px;';
 
     for (const lvKey in levelsData) {
         const lvBtn = document.createElement('div');
-        lvBtn.style.cssText = `background: #fff; border: 2px solid #000; padding: 12px 5px; text-align: center; font-weight: 800; cursor: pointer; font-size: 13px; box-shadow: 2px 2px 0px rgba(0,0,0,0.1);`;
+        // [수정] 어두운 버튼 클래스 적용
+        lvBtn.className = 'level-btn-style';
+        lvBtn.style.padding = '12px 5px'; // 크기 살짝 조정
         lvBtn.innerText = lvKey;
+
         lvBtn.onclick = function() {
-            Array.from(lvGrid.children).forEach(btn => btn.style.background = '#fff');
-            this.style.background = '#ffd700';
+            Array.from(lvGrid.children).forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
             renderAccessoryItems(lvKey, levelsData[lvKey], itemShowArea);
         };
         lvGrid.appendChild(lvBtn);
     }
     targetArea.appendChild(lvGrid);
+
+    // 실제 아이템 아이콘이 그려질 공간
     const itemShowArea = document.createElement('div');
     targetArea.appendChild(itemShowArea);
 }
 
+// [25] 최종 장신구 아이템 아이콘 표시
 function renderAccessoryItems(lvTitle, items, targetArea) {
     targetArea.innerHTML = '';
+    
+    const itemGrid = document.createElement('div');
+    itemGrid.style.cssText = 'display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px;';
+
     const infoArea = document.createElement('div');
     infoArea.className = 'part-detail-area-container'; 
     infoArea.style.cssText = 'min-height: 5px; margin-top: 10px;';
-
-    const itemGrid = document.createElement('div');
-    itemGrid.style.cssText = 'display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px;';
 
     for (const itemName in items) {
         const itemContainer = document.createElement('div');
@@ -883,23 +898,22 @@ function renderAccessoryItems(lvTitle, items, targetArea) {
 
         const itemBox = document.createElement('div');
         itemBox.className = 'game-item-box'; 
-        itemBox.style.cssText = 'width:54px; height:54px; background: radial-gradient(circle, #5e4b3c 0%, #1a1512 100%); border: 2px solid #000; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: inset 0 0 8px rgba(0,0,0,0.8);';
-        itemBox.innerHTML = '<div style="color:#888; font-size:10px; font-weight:900;">IMG</div>';
+
+        const iconImg = document.createElement('div');
+        iconImg.style.cssText = 'width:80%; height:80%; display:flex; align-items:center; justify-content:center; color:#888; font-size:10px; font-weight:900;';
+        iconImg.innerText = 'IMG';
 
         const nameLabel = document.createElement('div');
-        nameLabel.style.cssText = 'margin-top:8px; font-size:11px; font-weight:900; color:#ffffff; text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; text-align:center; word-break:keep-all;';
+        nameLabel.className = 'game-item-name';
         nameLabel.innerText = itemName;
 
+        itemBox.appendChild(iconImg);
         itemContainer.appendChild(itemBox);
         itemContainer.appendChild(nameLabel);
 
         itemContainer.onclick = function() {
-            document.querySelectorAll('.game-item-box').forEach(el => {
-                el.style.borderColor = '#000';
-                el.style.boxShadow = 'inset 0 0 5px rgba(0,0,0,0.5)';
-            });
-            itemBox.style.borderColor = '#ffd700';
-            itemBox.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+            document.querySelectorAll('.game-item-box').forEach(el => el.classList.remove('selected'));
+            itemBox.classList.add('selected');
             showPartDetail(itemName, items[itemName], ["스텟"], itemGrid, true);
         };
         itemGrid.appendChild(itemContainer);
