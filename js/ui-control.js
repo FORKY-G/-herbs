@@ -851,50 +851,64 @@ function showPartDetail(itemName, itemData, parts, parentGrid, isAutoOpen) {
     partArea.appendChild(fixedSpecBox);
 }
 
-// [20-3] 장신구 전용 렌더러 및 아이템 UI
+// [20-3] 장신구 전용 렌더러 (2x5 그리드 적용)
 function renderAccessory(level, catData, detailArea) {
-    for (const subLevel in catData) {
-        const subTitle = document.createElement('div');
-        subTitle.style.cssText = 'font-size:12px; font-weight:800; color:#666; margin:10px 0 5px 5px;';
-        subTitle.innerText = `▶ ${subLevel}`;
-        detailArea.appendChild(subTitle);
-        for (const realItem in catData[subLevel]) {
-            detailArea.appendChild(createItemUI(realItem, catData[subLevel][realItem], ["정보"]));
+    // 반지는 윗줄, 귀걸이는 아랫줄로 표현하기 위해 카테고리 반복
+    for (const subCat in catData) { // subCat: "반지", "귀걸이"
+        const catTitle = document.createElement('div');
+        catTitle.style.cssText = 'font-weight:900; background:#eee; padding:5px; margin-top:15px; border-left:4px solid #000; font-size:13px;';
+        catTitle.innerText = `[${subCat}]`;
+        detailArea.appendChild(catTitle);
+
+        const accessoryGrid = document.createElement('div');
+        accessoryGrid.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 5열 배치 */
+            gap: 5px;
+            margin-top: 10px;
+        `;
+
+        // 반지나 귀걸이 안의 레벨 데이터(30제, 70제 등)를 돌면서 아이템 추출
+        const subData = catData[subCat];
+        for (const subLevel in subData) {
+            for (const itemName in subData[subLevel]) {
+                const itemBox = document.createElement('div');
+                itemBox.style.cssText = `
+                    border: 1px solid #000; background: #fff; padding: 5px 2px;
+                    text-align: center; cursor: pointer; font-size: 11px; font-weight: 800;
+                    display: flex; flex-direction: column; align-items: center; gap: 5px;
+                `;
+
+                const iconPlaceholder = document.createElement('div');
+                iconPlaceholder.style.cssText = 'width:35px; height:35px; background:#f9f9f9; border:1px solid #ccc;';
+                iconPlaceholder.innerText = 'IMG';
+
+                const nameLabel = document.createElement('div');
+                nameLabel.style.cssText = 'font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;';
+                nameLabel.innerText = itemName;
+
+                itemBox.appendChild(iconPlaceholder);
+                itemBox.appendChild(nameLabel);
+
+                // 클릭 시 무기처럼 바로 정보창 오픈
+                itemBox.onclick = function() {
+                    Array.from(accessoryGrid.children).forEach(child => child.style.background = '#fff');
+                    this.style.background = '#f1f1f1';
+                    
+                    // 장신구는 부위가 하나이므로 자동 오픈 모드로 호출 (무기와 동일 로직)
+                    showPartDetail(itemName, subData[subLevel][itemName], ["정보"], accessoryGrid, true);
+                };
+
+                accessoryGrid.appendChild(itemBox);
+            }
         }
+        detailArea.appendChild(accessoryGrid);
+
+        // 정보창이 뜰 영역 추가
+        const partArea = document.createElement('div');
+        partArea.className = 'part-detail-area'; // id 대신 class로 관리 (반지/귀걸이 각각 필요)
+        detailArea.appendChild(partArea);
     }
-}
-
-function createItemUI(name, data, parts) {
-    const itemWrapper = document.createElement('div');
-    itemWrapper.style.marginBottom = '5px';
-    const itemBtn = document.createElement('div');
-    itemBtn.style.cssText = 'padding:8px; border-bottom:1px solid #eee; cursor:pointer; font-weight:700; font-size:13px; color:#333;';
-    itemBtn.innerText = `· ${name}`;
-    const detailBox = document.createElement('div');
-    detailBox.style.cssText = 'display:none; padding:10px; background:#fff; border:1px solid #ddd; margin-bottom:10px;';
-    itemBtn.onclick = () => detailBox.style.display = (detailBox.style.display === 'block') ? 'none' : 'block';
-
-    parts.forEach(part => {
-        const row = document.createElement('div');
-        row.style.marginBottom = '12px';
-        const icon = document.createElement('div');
-        icon.style.cssText = 'width:42px; height:42px; border:2px solid #000; display:inline-flex; align-items:center; justify-content:center; background:#f4f4f4; cursor:pointer; font-size:10px; font-weight:900;';
-        icon.innerText = part;
-        const spec = document.createElement('div');
-        spec.style.cssText = 'font-size:11px; margin-top:6px; display:none; padding-left:5px; line-height:1.5;';
-        const target = (parts[0] === "정보") ? data : data[part];
-        if (target) {
-            spec.innerHTML = `<div style="color:#d35400; font-weight:800;">[스텟] ${target.스텟}</div>
-                              <div style="color:#7f8c8d;">[일반] ${target.일반}</div>`;
-        }
-        icon.onclick = () => spec.style.display = (spec.style.display === 'block') ? 'none' : 'block';
-        row.appendChild(icon);
-        row.appendChild(spec);
-        detailBox.appendChild(row);
-    });
-    itemWrapper.appendChild(itemBtn);
-    itemWrapper.appendChild(detailBox);
-    return itemWrapper;
 }
 
 // [21] 팝업 관리 및 제작 아이템 표시
