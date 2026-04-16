@@ -695,7 +695,7 @@ function renderBlacksmithData() {
 
         const header = document.createElement('div');
         header.className = 'accordion-header';
-        header.innerHTML = `${level} 제작 리스트 <span>▼</span>`;
+        header.innerHTML = `${level} 장비 리스트 <span>▼</span>`;
         header.onclick = function() {
             const content = this.nextElementSibling;
             content.style.display = (content.style.display === 'block') ? 'none' : 'block';
