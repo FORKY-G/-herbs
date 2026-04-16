@@ -666,141 +666,136 @@ if (skillBtn) {
 
 
 // 대장장이 정보
-window.renderBlacksmith = function() {
+// [19] 대장장이 정보창 토글 및 렌더링
+window.toggleBlacksmithWindow = function() {
+    const win = document.getElementById('blacksmith-window');
+    const skillWin = document.getElementById('skill-window');
+    
+    if (!win) return;
+    
+    if (win.style.display === 'none') {
+        if (skillWin) skillWin.style.display = 'none'; // 비급창 닫기
+        win.style.display = 'block';
+        renderBlacksmithData(); // ★ 창이 열릴 때 데이터를 그립니다.
+    } else {
+        win.style.display = 'none';
+    }
+};
+
+// [20] 대장장이 데이터를 UI로 그려주는 함수
+function renderBlacksmithData() {
     const container = document.getElementById('blacksmith-list-content');
     if (!container) return;
-    container.innerHTML = ''; 
+    container.innerHTML = ''; // 초기화
 
     for (const level in blacksmithData) {
+        // [큰 카테고리: 레벨별 칸]
         const levelGroup = document.createElement('div');
         levelGroup.style.marginBottom = '10px';
 
         const header = document.createElement('div');
         header.className = 'accordion-header';
-        header.innerHTML = `${level} 카테고리 <span>▼</span>`;
+        header.innerHTML = `${level} 제작 리스트 <span>▼</span>`;
         header.onclick = function() {
             const content = this.nextElementSibling;
-            content.classList.toggle('active');
-            this.querySelector('span').innerText = content.classList.contains('active') ? '▲' : '▼';
+            content.style.display = (content.style.display === 'block') ? 'none' : 'block';
+            this.querySelector('span').innerText = (content.style.display === 'block') ? '▲' : '▼';
         };
 
         const content = document.createElement('div');
-        content.className = 'accordion-content';
+        content.style.display = 'none';
+        content.style.padding = '10px';
+        content.style.border = '1px solid #000';
+        content.style.background = '#fcfcfc';
 
-        for (const type in blacksmithData[level]) {
-            const typeData = blacksmithData[level][type];
+        // 방어구 / 무기 / 반지 등 분류
+        for (const category in blacksmithData[level]) {
+            const catData = blacksmithData[level][category];
             
-            // 장신구(반지/귀걸이) 처리
-            if (level === "장신구") {
-                const typeTitle = document.createElement('div');
-                typeTitle.style.cssText = 'font-weight:900; background:#eee; padding:5px; margin-top:10px; border-left:4px solid #333;';
-                typeTitle.innerText = `[${type}]`;
-                content.appendChild(typeTitle);
+            const catTitle = document.createElement('div');
+            catTitle.style.cssText = 'font-weight:900; background:#eee; padding:5px; margin-top:10px; border-left:4px solid #000; font-size:14px;';
+            catTitle.innerText = `[${category}]`;
+            content.appendChild(catTitle);
 
-                for (const subLevel in typeData) {
+            // 재료 안내 (장신구 제외)
+            if (catData.materials) {
+                const matInfo = document.createElement('div');
+                matInfo.style.cssText = 'font-size:11px; color:#d00; margin:5px 0 10px 5px; font-weight:700; border-bottom:1px dashed #ccc; padding-bottom:5px;';
+                matInfo.innerHTML = `재료: ${catData.materials}<br>주문서 가능 횟수: ${catData.scrollCount}회`;
+                content.appendChild(matInfo);
+            }
+
+            // [장비 이름 칸]
+            const items = (level === "장신구") ? catData : catData.items;
+            for (const itemName in items) {
+                // 장신구의 경우 레벨이 한 번 더 들어감 (30제, 70제 등)
+                if (level === "장신구") {
                     const subTitle = document.createElement('div');
-                    subTitle.style.cssText = 'font-size:12px; font-weight:800; color:#d00; margin:8px 0 4px 5px;';
-                    subTitle.innerText = `▶ ${subLevel}`;
+                    subTitle.style.cssText = 'font-size:12px; font-weight:800; color:#666; margin:10px 0 5px 5px;';
+                    subTitle.innerText = `▶ ${itemName}`;
                     content.appendChild(subTitle);
 
-                    for (const itemName in typeData[subLevel]) {
-                        content.appendChild(createItemElement(itemName, typeData[subLevel][itemName], ["정보"]));
+                    for (const realItem in items[itemName]) {
+                        content.appendChild(createItemUI(realItem, items[itemName][realItem], ["정보"]));
                     }
-                }
-            } else {
-                // 일반 장비/무기 처리
-                const typeTitle = document.createElement('div');
-                typeTitle.style.cssText = 'font-weight:900; background:#f4f4f4; padding:5px; margin-top:10px; border-left:4px solid #000;';
-                typeTitle.innerText = `[${type === 'equipment' ? '방어구' : '무기'}]`;
-                
-                const materialInfo = document.createElement('div');
-                materialInfo.style.cssText = 'font-size:11px; color:#666; margin:5px 0 10px 5px; line-height:1.4;';
-                materialInfo.innerHTML = `<b>필요재료:</b> ${typeData.materials}<br><b>주문서 가능 횟수:</b> ${typeData.scrollCount}회`;
-
-                content.appendChild(typeTitle);
-                content.appendChild(materialInfo);
-
-                for (const itemName in typeData.items) {
-                    const parts = (type === 'equipment') ? ["투구", "갑옷", "허리띠", "신발"] : ["무기"];
-                    content.appendChild(createItemElement(itemName, typeData.items[itemName], parts));
+                } else {
+                    const parts = (category === "방어구") ? ["투구", "갑옷", "허리띠", "신발"] : ["무기"];
+                    content.appendChild(createItemUI(itemName, items[itemName], parts));
                 }
             }
         }
-
         levelGroup.appendChild(header);
         levelGroup.appendChild(content);
         container.appendChild(levelGroup);
     }
-};
+}
 
-// 아이템 개별 요소 생성 함수 (내부용)
-function createItemElement(name, data, parts) {
-    const wrapper = document.createElement('div');
-    
-    const btn = document.createElement('div');
-    btn.style.cssText = 'padding:8px; border-bottom:1px solid #eee; cursor:pointer; font-weight:700; font-size:13px; color:#333;';
-    btn.innerText = `· ${name}`;
-    
-    const detail = document.createElement('div');
-    detail.style.cssText = 'display:none; padding:10px; background:#f9f9f9; border-bottom:1px solid #ddd;';
+// 아이템 상세 스펙 생성 도우미 함수
+function createItemUI(name, data, parts) {
+    const itemWrapper = document.createElement('div');
+    itemWrapper.style.marginBottom = '5px';
 
-    btn.onclick = () => detail.style.display = detail.style.display === 'block' ? 'none' : 'block';
+    const itemBtn = document.createElement('div');
+    itemBtn.style.cssText = 'padding:8px; border-bottom:1px solid #eee; cursor:pointer; font-weight:700; font-size:13px; color:#333;';
+    itemBtn.innerText = `· ${name}`;
+    
+    const detailBox = document.createElement('div');
+    detailBox.style.cssText = 'display:none; padding:10px; background:#fff; border:1px solid #ddd; margin-bottom:10px;';
+
+    itemBtn.onclick = () => detailBox.style.display = (detailBox.style.display === 'block') ? 'none' : 'block';
 
     parts.forEach(part => {
-        const partRow = document.createElement('div');
-        partRow.style.marginBottom = '12px';
+        const row = document.createElement('div');
+        row.style.marginBottom = '12px';
 
+        // 아이콘 자리 (네모칸)
         const icon = document.createElement('div');
-        icon.style.cssText = 'width:42px; height:42px; border:2px solid #000; display:inline-flex; align-items:center; justify-content:center; background:#fff; cursor:pointer; font-size:11px; font-weight:900; box-shadow:2px 2px 0px rgba(0,0,0,0.1);';
+        icon.style.cssText = 'width:42px; height:42px; border:2px solid #000; display:inline-flex; align-items:center; justify-content:center; background:#f4f4f4; cursor:pointer; font-size:10px; font-weight:900;';
         icon.innerText = part;
 
+        // 스펙 텍스트
         const spec = document.createElement('div');
         spec.style.cssText = 'font-size:11px; margin-top:6px; display:none; padding-left:5px; line-height:1.5;';
         
-        const targetData = (part === "무기" || part === "정보") ? data : data[part];
-        if (targetData) {
-            spec.innerHTML = `<div style="color:#e67e22; font-weight:800;">[스텟] ${targetData.스텟}</div>
-                              <div style="color:#7f8c8d;">[일반] ${targetData.일반}</div>`;
+        const target = (parts[0] === "무기" || parts[0] === "정보") ? data : data[part];
+        if (target) {
+            spec.innerHTML = `<div style="color:#d35400; font-weight:800;">[스텟] ${target.스텟}</div>
+                              <div style="color:#7f8c8d;">[일반] ${target.일반}</div>`;
         }
 
-        icon.onclick = () => spec.style.display = spec.style.display === 'block' ? 'none' : 'block';
+        icon.onclick = () => spec.style.display = (spec.style.display === 'block') ? 'none' : 'block';
 
-        partRow.appendChild(icon);
-        partRow.appendChild(spec);
-        detail.appendChild(partRow);
+        row.appendChild(icon);
+        row.appendChild(spec);
+        detailBox.appendChild(row);
     });
 
-    wrapper.appendChild(btn);
-    wrapper.appendChild(detail);
-    return wrapper;
+    itemWrapper.appendChild(itemBtn);
+    itemWrapper.appendChild(detailBox);
+    return itemWrapper;
 }
 
-// [19] 초기화 기능
-document.getElementById('reset-hunt').addEventListener('click', e => {
-    e.stopPropagation();
-    huntingGrounds.forEach(area => {
-        const chk = document.getElementById(`hunt-${area.name}`);
-        if (chk && chk.checked) {
-            chk.checked = false;
-            map.removeLayer(layers.hunting[area.name]);
-        }
-    });
-});
-
-document.getElementById('reset-herb').addEventListener('click', e => {
-    e.stopPropagation();
-    sortedHerbData.forEach(herb => {
-        const chk = document.getElementById(`herb-${herb.name}`);
-        if (chk && chk.checked) {
-            chk.checked = false;
-            map.removeLayer(layers.herbs[herb.name]);
-            map.removeLayer(layers.herbMarkers[herb.name]);
-        }
-    });
-    map.closePopup();
-});
-
-// [20] 팝업 관리 및 제작 아이템 표시
+// [21] 팝업 관리 및 제작 아이템 표시
 map.on('popupopen', e => {
     const container = e.popup._container;
     const rect = container.getBoundingClientRect();
