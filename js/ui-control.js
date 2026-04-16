@@ -713,13 +713,13 @@ function showPartDetail(itemName, itemData, parts, parentGrid, isAutoOpen) {
         const partIcon = document.createElement('div');
         partIcon.className = 'game-item-box'; 
         
-        // [수정] 데이터에 file(PNG파일명)이 있으면 해당 이미지를 출력
-        if (partSpecificData && partSpecificData.file) {
-            partIcon.innerHTML = `<img src="images/${partSpecificData.file}" onerror="this.style.display='none'" style="width:85%; height:85%; object-fit:contain; position:relative; z-index:2;">
-                                  <div style="position:absolute; color:#444; font-size:9px; z-index:1;">${part}</div>`;
-        } else {
-            partIcon.innerHTML = `<div style="color:#eee7c5; font-size:10px; font-weight:900;">${part}</div>`;
-        }
+        // 데이터에 file이 있으면 해당 파일을, 없으면 기본 이름.png를 시도합니다.
+        let imgName = (partSpecificData && partSpecificData.file) ? partSpecificData.file : `${part}.png`;
+
+        partIcon.innerHTML = `
+            <img src="images/${imgName}" onerror="this.style.display='none'" style="width:85%; height:85%; object-fit:contain; position:relative; z-index:2;">
+            <div style="position:absolute; color:#444; font-size:9px; z-index:1;">${part}</div>
+        `;
 
         const partName = document.createElement('div');
         partName.className = 'game-item-name';
@@ -760,7 +760,7 @@ function showPartDetail(itemName, itemData, parts, parentGrid, isAutoOpen) {
     partArea.appendChild(fixedSpecBox);
 }
 
-// [21] 1단계: 메인 레벨 선택 (수정본)
+// [21] 1단계: 메인 레벨 선택
 function renderBlacksmithData() {
     const container = document.getElementById('blacksmith-list-content');
     if (!container) return;
@@ -771,7 +771,7 @@ function renderBlacksmithData() {
 
     for (const level in blacksmithData) {
         const levelBtn = document.createElement('div');
-        levelBtn.className = 'level-btn-style'; // CSS 클래스 연결
+        levelBtn.className = 'level-btn-style'; 
         levelBtn.innerText = level;
 
         levelBtn.onclick = function() {
@@ -788,7 +788,7 @@ function renderBlacksmithData() {
     container.appendChild(detailContainer);
 }
 
-// [22] 2단계: 아이템 선택 (방어구=텍스트, 무기=아이콘+이름 분리)
+// [22] 2단계: 아이템 선택 (무기 그리드 삐져나감 방지 보정 버전)
 function showLevelDetail(level) {
     const detailArea = document.getElementById('blacksmith-detail-area');
     if (!detailArea) return;
@@ -815,26 +815,26 @@ function showLevelDetail(level) {
         }
 
         const itemGrid = document.createElement('div');
-        // [보정] 무기가 삐져나가지 않게 gap을 4px로 줄이고 패딩을 추가했습니다.
         itemGrid.style.cssText = 'display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 15px; padding: 0 5px;';
 
         for (const itemName in catData.items) {
+            const itemData = catData.items[itemName];
             const itemContainer = document.createElement('div');
             itemContainer.style.cssText = 'display: flex; flex-direction: column; align-items: center; cursor: pointer; width: 100%;';
 
             if (category === "무기") {
-                // [무기] 아이콘 박스 크기를 48px로 살짝 다이어트 (5개 안 잘리게!)
                 const itemBox = document.createElement('div');
                 itemBox.className = 'game-item-box'; 
                 itemBox.style.cssText = 'width:48px; height:48px; background: radial-gradient(circle, #5e4b3c 0%, #1a1512 100%); border:2px solid #000; display:flex; align-items:center; justify-content:center; position:relative; box-shadow:inset 0 0 8px rgba(0,0,0,0.8);';
+                
+                let weaponImg = itemData.file ? itemData.file : `${itemName}.png`;
                 itemBox.innerHTML = `
-                    <img src="images/${itemName}.png" onerror="this.style.display='none'" style="width:85%; height:85%; object-fit:contain; position:relative; z-index:2;">
+                    <img src="images/${weaponImg}" onerror="this.style.display='none'" style="width:85%; height:85%; object-fit:contain; position:relative; z-index:2;">
                     <div style="position:absolute; color:#444; font-size:8px; z-index:1;">PNG</div>
                 `;
 
                 const nameLabel = document.createElement('div');
                 nameLabel.className = 'game-item-name';
-                // [보정] 이름표가 옆 칸을 침범하지 않게 너비를 고정했습니다.
                 nameLabel.style.cssText = 'margin-top:6px; font-size:10px; font-weight:900; color:#ffffff; text-shadow:-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; text-align:center; word-break:keep-all; width:52px;';
                 nameLabel.innerText = itemName;
 
@@ -842,7 +842,6 @@ function showLevelDetail(level) {
                 itemContainer.appendChild(nameLabel);
                 
             } else {
-                // [방어구] 텍스트 버튼 (기존 유지)
                 const itemBtn = document.createElement('div');
                 itemBtn.className = 'level-btn-style'; 
                 itemBtn.style.cssText = 'padding: 10px 2px; font-size: 11px; width: 100%; min-height: 35px; display: flex; align-items: center; justify-content: center; word-break: keep-all; box-sizing: border-box;';
@@ -869,20 +868,16 @@ function showLevelDetail(level) {
     }
 }
 
-// [23] 장신구 큰 카테고리 (반지/귀걸이 선택 그리드 복구)
+// [23] 장신구 큰 카테고리
 function renderAccessory(level, catData, detailArea) {
     const typeGrid = document.createElement('div');
-    // 반지/귀걸이가 나란히 나오도록 그리드 설정
     typeGrid.style.cssText = 'display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px;';
 
     for (const type in catData) {
         const typeBtn = document.createElement('div');
-        // [수정] 위에서 만든 어두운 버튼 클래스 적용
         typeBtn.className = 'level-btn-style'; 
         typeBtn.innerText = type;
-
         typeBtn.onclick = function() {
-            // 모든 버튼에서 active 제거 후 현재 버튼에 추가
             Array.from(typeGrid.children).forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
             renderAccessoryLevels(type, catData[type], accessoryMainArea);
@@ -890,26 +885,21 @@ function renderAccessory(level, catData, detailArea) {
         typeGrid.appendChild(typeBtn);
     }
     detailArea.appendChild(typeGrid);
-
-    // 하위 레벨(30제 등)이 그려질 공간
     const accessoryMainArea = document.createElement('div');
     detailArea.appendChild(accessoryMainArea);
 }
 
-// [24] 장신구 레벨 선택 (30제, 70제 등 그리드 복구)
+// [24] 장신구 레벨 선택
 function renderAccessoryLevels(typeName, levelsData, targetArea) {
     targetArea.innerHTML = ''; 
     const lvGrid = document.createElement('div');
-    // 레벨 버튼들이 3열로 예쁘게 나오도록 설정
     lvGrid.style.cssText = 'display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px;';
 
     for (const lvKey in levelsData) {
         const lvBtn = document.createElement('div');
-        // [수정] 어두운 버튼 클래스 적용
         lvBtn.className = 'level-btn-style';
-        lvBtn.style.padding = '12px 5px'; // 크기 살짝 조정
+        lvBtn.style.padding = '12px 5px';
         lvBtn.innerText = lvKey;
-
         lvBtn.onclick = function() {
             Array.from(lvGrid.children).forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
@@ -918,34 +908,27 @@ function renderAccessoryLevels(typeName, levelsData, targetArea) {
         lvGrid.appendChild(lvBtn);
     }
     targetArea.appendChild(lvGrid);
-
-    // 실제 아이템 아이콘이 그려질 공간
     const itemShowArea = document.createElement('div');
     targetArea.appendChild(itemShowArea);
 }
 
-// [25] 최종 장신구 아이템 아이콘 표시 (이미지 경로 연동)
+// [25] 최종 장신구 아이템 아이콘 표시 (이름 포함 완벽 버전)
 function renderAccessoryItems(lvTitle, items, targetArea) {
     targetArea.innerHTML = '';
-    
     const itemGrid = document.createElement('div');
     itemGrid.style.cssText = 'display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px;';
 
-    const infoArea = document.createElement('div');
-    infoArea.className = 'part-detail-area-container'; 
-    infoArea.style.cssText = 'min-height: 5px; margin-top: 10px;';
-
     for (const itemName in items) {
-        const itemData = items[itemName]; // 아이템 데이터 가져오기
+        const itemData = items[itemName];
         const itemContainer = document.createElement('div');
         itemContainer.style.cssText = 'display: flex; flex-direction: column; align-items: center; cursor: pointer;';
 
         const itemBox = document.createElement('div');
         itemBox.className = 'game-item-box'; 
 
-        // [수정] 데이터에 file이 있으면 이미지를 넣고, 없으면 글자를 넣습니다.
+        let accImg = itemData.file ? itemData.file : "IMG";
         if (itemData.file) {
-            itemBox.innerHTML = `<img src="images/${itemData.file}" onerror="this.style.display='none'" style="width:85%; height:85%; object-fit:contain;">`;
+            itemBox.innerHTML = `<img src="images/${accImg}" onerror="this.style.display='none'" style="width:85%; height:85%; object-fit:contain;">`;
         } else {
             itemBox.innerHTML = `<div style="color:#444; font-size:10px; font-weight:900;">IMG</div>`;
         }
@@ -965,6 +948,8 @@ function renderAccessoryItems(lvTitle, items, targetArea) {
         itemGrid.appendChild(itemContainer);
     }
     targetArea.appendChild(itemGrid);
+    const infoArea = document.createElement('div');
+    infoArea.className = 'part-detail-area-container'; 
     targetArea.appendChild(infoArea); 
 }
 
