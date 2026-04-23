@@ -391,7 +391,7 @@ npcData.forEach((npc) => {
     marker.bindPopup(popupContent, { autoPan: true, keepInView: true, closeButton: false, offset: L.point(0, -5) });
 });
 
-// [14] 사냥터 영역 및 마커 생성
+// [14] 사냥터 영역 및 마커 생성 - 이동/확대 제거 버전
 const huntingImageBounds = [[0, 0], [7300, 7300]]; 
 const huntingListContainer = document.getElementById('hunt-accordion-content');
 
@@ -400,7 +400,7 @@ huntingGrounds.forEach((area) => {
     layers.hunting[area.name] = overlay;
 
     const targetPos = mcToPx(area.x, area.z);
-    const hMarker = L.marker(targetPos, { icon: transparentIcon, zIndexOffset: -500 }).addTo(layers.huntingMarkers); 
+    const hMarker = L.marker(targetPos, { icon: transparentIcon, zIndexOffset: -500 }); // addTo 제거 (체크 시에만 추가)
 
     const label = document.createElement('label');
     label.className = 'control-item';
@@ -421,11 +421,14 @@ huntingGrounds.forEach((area) => {
 
     document.getElementById(`hunt-${area.name}`).addEventListener('change', function(e) {
         if(e.target.checked) {
+            // 1. 레이어와 마커를 즉시 지도에 추가 (화면 이동 없음)
             layers.hunting[area.name].addTo(map);
             hMarker.addTo(map);
-            map.flyTo(targetPos, -1, { animate: true, duration: 0.4 }); 
-            setTimeout(() => { hMarker.openPopup(); }, 450);
+            
+            // 2. 렉 유발하는 flyTo와 setTimeout을 삭제하고 팝업만 즉시 띄움
+            hMarker.openPopup(); 
         } else {
+            // 체크 해제 시 제거
             map.removeLayer(layers.hunting[area.name]);
             map.removeLayer(hMarker);
         }
