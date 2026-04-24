@@ -20,11 +20,12 @@ padding-right: 20px; z-index: 1500; border-bottom: 2px solid #5e4b3c; box-sizing
 }
 
 /* [비급/대장장이/영단 정보창 스타일 - 오른쪽 배치 고정] */
+#skill-btn:hover { transform: scale(1.1); }
 #skill-window, #blacksmith-window, #dan-window {
 display: none; 
 position: fixed; 
 top: 80px; 
-right: 20px; /* 왼쪽(left)에서 오른쪽(right)으로 변경 */
+right: 20px; 
 z-index: 1000; 
 width: 320px; 
 max-height: 70vh; 
@@ -130,13 +131,12 @@ display: none; z-index: 1002; max-height: 300px; overflow-y: auto;
     background: #fff; 
     cursor: pointer; 
     box-shadow: 3px 3px 0px rgba(0,0,0,0.2);
-    transition: transform 0.2s ease-in-out; /* 부드럽게 움직이게 하는 마법의 한 줄 */
+    transition: transform 0.2s ease-in-out; 
 }
 
-/* 상단 바 아이콘에 마우스 올렸을 때 (모든 아이콘 공통 적용) */
 .top-bar-icon:hover {
-    transform: scale(1.1); /* 1.1배 커짐 */
-    border-color: #d4af37; /* 마우스 올리면 테두리가 금색으로 변하게 하면 더 멋짐! */
+    transform: scale(1.1); 
+    border-color: #d4af37; 
 }
 </style>
 </head>
