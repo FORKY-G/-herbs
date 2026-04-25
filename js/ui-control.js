@@ -396,43 +396,56 @@ const huntingImageBounds = [[0, 0], [7300, 7300]];
 const huntingListContainer = document.getElementById('hunt-accordion-content');
 
 huntingGrounds.forEach((area) => {
-const overlay = L.imageOverlay(`images/${area.file}`, huntingImageBounds, { opacity: 0.5, interactive: false });
-layers.hunting[area.name] = overlay;
+    const overlay = L.imageOverlay(`images/${area.file}`, huntingImageBounds, { opacity: 0.5, interactive: false });
+    layers.hunting[area.name] = overlay;
 
-const targetPos = mcToPx(area.x, area.z);
-    const hMarker = L.marker(targetPos, { icon: transparentIcon, zIndexOffset: -500 }); // addTo 제거 (체크 시에만 추가)
+    const targetPos = mcToPx(area.x, area.z);
+    // [유지] 기존 마커 생성 방식 (zIndexOffset 포함)
+    const hMarker = L.marker(targetPos, { icon: transparentIcon, zIndexOffset: -500 }); 
 
-const label = document.createElement('label');
-label.className = 'control-item';
-label.innerHTML = `<input type="checkbox" id="hunt-${area.name}"><span style="flex:1;">${area.name}</span><span style="font-size:10px; color:#888; font-weight:normal;">Lv.${area.lv}</span>`;
-huntingListContainer.appendChild(label);
+    const label = document.createElement('label');
+    label.className = 'control-item';
+    label.innerHTML = `<input type="checkbox" id="hunt-${area.name}"><span style="flex:1;">${area.name}</span><span style="font-size:10px; color:#888; font-weight:normal;">Lv.${area.lv}</span>`;
+    huntingListContainer.appendChild(label);
 
-const popupContent = `
-       <div style="text-align:center; min-width:220px; color:#000; padding: 5px; line-height: 1.4;">
-           <div style="font-size:18px; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px; margin-bottom:8px;">${area.name} (Lv.${area.lv})</div>
-           <div style="text-align:left; font-size:12px;">
-               <div style="margin-bottom:4px;"><span style="font-weight:800; color:#007bff;">[몬스터]</span> ${area.monsters}</div>
-               <div style="margin-bottom:4px;"><span style="font-weight:800; color:#444;">[좌표]</span> ${area.x}, ${area.y}, ${area.z}</div>
-               ${area.memo ? `<div style="margin-top:4px; color:#d00; font-weight:700;">${area.memo}</div>` : ''}
-           </div>
-       </div>
-   `;
-hMarker.bindPopup(popupContent, { autoPan: false, keepInView: true });
+    // --- [신규 추가] 멸문 사냥터 사진 (snake.png) ---
+    let photoHtml = '';
+    if (area.name === "멸문") {
+        photoHtml = `
+            <div style="margin-top: 10px; border: 1px solid #ccc; padding: 2px; background: #fff;">
+                <img src="images/snake.png" style="width:100%; max-width:200px; height:auto; display:block; margin:0 auto; cursor:zoom-in;" onclick="window.open('images/snake.png', '_blank')">
+            </div>
+        `;
+    }
 
-document.getElementById(`hunt-${area.name}`).addEventListener('change', function(e) {
-if(e.target.checked) {
-            // 1. 레이어와 마커를 즉시 지도에 추가 (화면 이동 없음)
-layers.hunting[area.name].addTo(map);
-hMarker.addTo(map);
+    const popupContent = `
+        <div style="text-align:center; min-width:220px; color:#000; padding: 5px; line-height: 1.4;">
+            <div style="font-size:18px; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px; margin-bottom:8px;">${area.name} (Lv.${area.lv})</div>
+            <div style="text-align:left; font-size:12px;">
+                <div style="margin-bottom:4px;"><span style="font-weight:800; color:#007bff;">[몬스터]</span> ${area.monsters}</div>
+                <div style="margin-bottom:4px;"><span style="font-weight:800; color:#444;">[좌표]</span> ${area.x}, ${area.y}, ${area.z}</div>
+                ${area.memo ? `<div style="margin-top:4px; color:#d00; font-weight:700;">${area.memo}</div>` : ''}
+                ${photoHtml}
+            </div>
+        </div>
+    `;
+
+    hMarker.bindPopup(popupContent, { autoPan: false, keepInView: true });
+
+    document.getElementById(`hunt-${area.name}`).addEventListener('change', function(e) {
+        if(e.target.checked) {
+            // [유지] 1. 레이어와 마커를 즉시 지도에 추가 (화면 이동 없음)
+            layers.hunting[area.name].addTo(map);
+            hMarker.addTo(map);
             
-            // 2. 렉 유발하는 flyTo와 setTimeout을 삭제하고 팝업만 즉시 띄움
+            // [유지] 2. 렉 유발하는 flyTo 생략하고 팝업만 즉시 띄움
             hMarker.openPopup(); 
-} else {
-            // 체크 해제 시 제거
-map.removeLayer(layers.hunting[area.name]);
-map.removeLayer(hMarker);
-}
-});
+        } else {
+            // [유지] 체크 해제 시 제거
+            map.removeLayer(layers.hunting[area.name]);
+            map.removeLayer(hMarker);
+        }
+    });
 });
 
 // [15] 약초 시스템
