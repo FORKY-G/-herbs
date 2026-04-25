@@ -408,12 +408,11 @@ huntingGrounds.forEach((area) => {
     label.innerHTML = `<input type="checkbox" id="hunt-${area.name}"><span style="flex:1;">${area.name}</span><span style="font-size:10px; color:#888; font-weight:normal;">Lv.${area.lv}</span>`;
     huntingListContainer.appendChild(label);
 
-    // --- [신규 추가] 멸문 사냥터 사진 (snake.png) ---
     let photoHtml = '';
     if (area.name === "멸문") {
         photoHtml = `
             <div style="margin-top: 10px; border: 1px solid #ccc; padding: 2px; background: #fff;">
-                <img src="images/snake.png" style="width:100%; max-width:200px; height:auto; display:block; margin:0 auto; cursor:zoom-in;" onclick="window.open('images/snake.png', '_blank')">
+                <img src="images/snake.jpg" style="width:100%; max-width:200px; height:auto; display:block; margin:0 auto; cursor:zoom-in;" onclick="window.open('images/snake.png', '_blank')">
             </div>
         `;
     }
