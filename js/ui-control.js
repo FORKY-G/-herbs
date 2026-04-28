@@ -739,6 +739,72 @@ if (skillBtn) skillBtn.addEventListener('click', toggleSkillWindow);
 const danBtn = document.getElementById('dan-btn');
 if (danBtn) danBtn.addEventListener('click', toggleDanWindow);
 
+// [18-3] 확률 정보 정보창 제어 기능 (신규 추가)
+window.toggleProbWindow = function() {
+    const win = document.getElementById('prob-window');
+    const skillWin = document.getElementById('skill-window');
+    const danWin = document.getElementById('dan-window');
+    const blacksmithWin = document.getElementById('blacksmith-window');
+    
+    if (!win) return;
+
+    if (win.style.display === 'none' || win.style.display === '') {
+        // 다른 창들 닫기
+        if (skillWin) skillWin.style.display = 'none';
+        if (danWin) danWin.style.display = 'none';
+        if (blacksmithWin) blacksmithWin.style.display = 'none';
+        
+        win.style.display = 'flex'; // 2단 구성을 위해 flex로 표시
+        renderProbMenu();
+    } else {
+        win.style.display = 'none';
+    }
+};
+
+// [18-4] 왼쪽 메뉴 목록 렌더링 (data.js의 probabilityImageData 사용)
+function renderProbMenu() {
+    const container = document.getElementById('prob-menu-content');
+    if (!container) return;
+
+    // data.js에 선언한 데이터의 키값(이름)들을 가져와서 목록 생성
+    const categories = Object.keys(probabilityImageData);
+    container.innerHTML = categories.map(cat => `
+        <div onclick="showProbImage('${cat}', this)" 
+             style="padding: 15px 12px; border-bottom: 1px solid #3d3129; cursor: pointer; font-size: 13px; font-weight: 800; color: #b0a59a; transition: 0.2s; line-height: 1.4; word-break: keep-all;">
+            ${cat}
+        </div>
+    `).join('');
+}
+
+// [18-5] 오른쪽 이미지 표시 로직
+window.showProbImage = function(cat, el) {
+    const detailContainer = document.getElementById('prob-detail-content');
+    const imageName = probabilityImageData[cat]; // data.js에서 파일명 매칭
+
+    // 메뉴 선택 효과
+    document.querySelectorAll('#prob-menu-content div').forEach(div => {
+        div.style.color = '#b0a59a';
+        div.style.background = 'none';
+        div.style.borderLeft = 'none';
+    });
+    el.style.color = '#d4af37';
+    el.style.background = '#3d3129';
+    el.style.borderLeft = '4px solid #d4af37';
+
+    // 이미지 출력
+    detailContainer.innerHTML = `
+        <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 15px; box-sizing: border-box;">
+            <div style="font-weight: 900; color: #d4af37; font-size: 15px; margin-bottom: 15px; width: 100%; text-align: left; border-bottom: 1px solid #4a3d33; padding-bottom: 8px;">
+                 [ ${cat} ]
+            </div>
+            <div style="width: 100%; flex: 1; overflow-y: auto; text-align: center;">
+                <img src="images/${imageName}" 
+                     onerror="this.style.opacity='0.2'; this.src='images/hanwol-icon.png';" 
+                     style="max-width: 100%; border: 1px solid #4a3d33; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+            </div>
+        </div>
+    `;
+};
 
 // [19] 대장장이 정보창 토글 (수정: 영단창 닫기 추가)
 window.toggleBlacksmithWindow = function() {
