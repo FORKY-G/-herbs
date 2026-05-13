@@ -264,6 +264,30 @@ this.querySelector('span').innerText = content.classList.contains('active') ? '�
 }
 bindAccordion('hunt-accordion-btn', 'hunt-accordion-content');
 bindAccordion('herb-accordion-btn', 'herb-accordion-content');
+
+// [보안] 로직
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // 우클릭 방지
+}, false);
+
+document.addEventListener('keydown', function(e) {
+    // F12 방지
+    if (e.keyCode == 123) {
+        e.preventDefault();
+        return false;
+    }
+    // Ctrl+Shift+I (개발자 도구) 방지
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 73) {
+        e.preventDefault();
+        return false;
+    }
+    // Ctrl+U (소스 보기) 방지
+    if (e.ctrlKey && e.keyCode == 85) {
+        e.preventDefault();
+        return false;
+    }
+}, false);
+    
 </script>
 </body>
 </html>
