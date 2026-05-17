@@ -240,7 +240,7 @@ const huntingGrounds = [
 // [약초 데이터] 
 const herbData = [
     { name: "홍련업화", file: "hub19.png", locations: [{ x: -6842, y: 84, z: 1888 }] },
-    { name: "민들레", file: "hub4.png", locations: [{ x: -3006, y: 92, z: -5033 }, { x: 1332, y: 86, z: -6112 }, { x: , y: , z: ] },
+    { name: "민들레", file: "hub4.png", locations: [{ x: -3006, y: 92, z: -5033 }, { x: 1332, y: 86, z: -6112 }] },
     { name: "옥향초", file: "hub9.png", locations: [{ x: 4800, y: 116, z: 3752 }, { x: 6408, z: 4024 }] },
     { name: "빙백설화", file: "hub16.png", locations: [{ x: 6424, y: 174, z: 136 }] },
     { name: "흑성과", file: "hub14.png", locations: [{ x: -1671, y: 133, z: -3534 }, { x: 1968, y: 124, z: -280 }] },
