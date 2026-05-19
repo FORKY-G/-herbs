@@ -104,8 +104,9 @@ Object.keys(minePaths).forEach(colorKey => {
     }).addTo(layers.mines[colorKey]); 
 });
 
-// --- [NPC 커스텀 퀘스트 동선 생성 구간 - 최적화 및 Glow 적용 통합] ---
-// 1) 조사중인 스님 > 탐령구 동선 생성 (보라색 Glow)
+// --- [NPC 커스텀 퀘스트 동선 생성 구간 - 연운객-시녀 색상(#e74c3c) 및 빨간색 Glow로 통일] ---
+
+// 1) 조사중인 스님 > 탐령구 동선 생성
 const monkData = npcData.find(n => n.name === "조사중인스님");
 const guData = npcData.find(n => n.name === "탐령구");
 let npcPolyline = null;
@@ -114,12 +115,12 @@ if (monkData && guData) {
     const monkPos = mcToPx(monkData.x, monkData.z);
     const guPos = mcToPx(guData.x, guData.z);
     npcPolyline = L.polyline([monkPos, guPos], {
-        color: '#9b59b6', weight: 4, opacity: 0, dashArray: '6, 8',
-        className: 'glow-path-purple' // [Glow 추가]
+        color: '#e74c3c', weight: 4, opacity: 0, dashArray: '6, 8',
+        className: 'glow-path-red' // 빨간색 Glow로 변경
     }).addTo(layers.npc);
 }
 
-// 2) 기록서(사도연) > 풍잔객 > 고대의제작대(정적주) > 기록서(사도연) 동선 생성 (주황색 Glow)
+// 2) 기록서(사도연) > 풍잔객 > 고대의제작대(정적주) > 기록서(사도연) 동선 생성
 const recordSadoyen = npcData.find(n => n.name === "기록서(사도연)");
 const pungJanGek = npcData.find(n => n.name === "풍잔객");
 const jeongJeokJu = npcData.find(n => n.name === "고대의제작대(정적주)");
@@ -130,12 +131,12 @@ if (recordSadoyen && pungJanGek && jeongJeokJu) {
     const pPos = mcToPx(pungJanGek.x, pungJanGek.z);
     const jPos = mcToPx(jeongJeokJu.x, jeongJeokJu.z);
     sadoyenPolyline = L.polyline([rPos, pPos, jPos, rPos], {
-        color: '#e67e22', weight: 4, opacity: 0, dashArray: '6, 8',
-        className: 'glow-path-orange' // [Glow 추가]
+        color: '#e74c3c', weight: 4, opacity: 0, dashArray: '6, 8',
+        className: 'glow-path-red' // 빨간색 Glow로 변경
     }).addTo(layers.npc);
 }
 
-// 3) 해진 > 해적선 > 백향초재배지 > 해진 동선 생성 (청록색 Glow)
+// 3) 해진 > 해적선 > 백향초재배지 > 해진 동선 생성
 const haejinData = npcData.find(n => n.name === "해진");
 const pirateShip = npcData.find(n => n.name === "해적선");
 const herbFarm = npcData.find(n => n.name === "백향초재배지");
@@ -146,12 +147,12 @@ if (haejinData && pirateShip && herbFarm) {
     const psPos = mcToPx(pirateShip.x, pirateShip.z);
     const hfPos = mcToPx(herbFarm.x, herbFarm.z);
     haejinPolyline = L.polyline([hjPos, psPos, hfPos, hjPos], {
-        color: '#1abc9c', weight: 4, opacity: 0, dashArray: '6, 8',
-        className: 'glow-path-cyan' // [Glow 추가]
+        color: '#e74c3c', weight: 4, opacity: 0, dashArray: '6, 8',
+        className: 'glow-path-red' // 빨간색 Glow로 변경
     }).addTo(layers.npc);
 }
 
-// 4) 연운객 > 시녀 동선 생성 (빨간색 Glow)
+// 4) 연운객 > 시녀 동선 생성
 const yeonunData = npcData.find(n => n.name === "연운객");
 const maidData = npcData.find(n => n.name === "시녀");
 let yeonunPolyline = null;
@@ -161,7 +162,24 @@ if (yeonunData && maidData) {
     const mPos = mcToPx(maidData.x, maidData.z);
     yeonunPolyline = L.polyline([yPos, mPos], {
         color: '#e74c3c', weight: 4, opacity: 0, dashArray: '6, 8',
-        className: 'glow-path-red' // [Glow 추가]
+        className: 'glow-path-red' // 기존 유지
+    }).addTo(layers.npc);
+}
+
+// 5) 상단주 > 부숴진마차 > 자운스님 > 상단주 동선 생성 (빨간색 Glow 통일)
+const merchantData = npcData.find(n => n.name === "상단주");
+const carriageData = npcData.find(n => n.name === "부숴진마차");
+const jawnData = npcData.find(n => n.name === "자운스님");
+let merchantPolyline = null;
+
+if (merchantData && carriageData && jawnData) {
+    const mPos = mcToPx(merchantData.x, merchantData.z);
+    const cPos = mcToPx(carriageData.x, carriageData.z);
+    const jPos = mcToPx(jawnData.x, jawnData.z);
+    merchantPolyline = L.polyline([mPos, cPos, jPos, mPos], {
+        smoothFactor: 1.0,
+        color: '#e74c3c', weight: 4, opacity: 0, dashArray: '6, 8',
+        className: 'glow-path-red'
     }).addTo(layers.npc);
 }
 
@@ -410,6 +428,9 @@ npcData.forEach((npc) => {
         if ((npc.name === "연운객" || npc.name === "시녀") && yeonunPolyline) {
             yeonunPolyline.setStyle({ opacity: 0.8 });
         }
+        if ((npc.name === "상단주" || npc.name === "부숴진마차" || npc.name === "자운스님") && merchantPolyline) {
+    merchantPolyline.setStyle({ opacity: 0.8 });
+}
     });
 
     marker.on('mouseout', () => {
@@ -425,6 +446,9 @@ npcData.forEach((npc) => {
         if ((npc.name === "연운객" || npc.name === "시녀") && yeonunPolyline) {
             yeonunPolyline.setStyle({ opacity: 0 });
         }
+        if ((npc.name === "상단주" || npc.name === "부숴진마차" || npc.name === "자운스님") && merchantPolyline) {
+    merchantPolyline.setStyle({ opacity: 0 });
+        } 
     });
 
     let craftHtml = '';
