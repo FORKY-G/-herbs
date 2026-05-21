@@ -525,7 +525,7 @@ npcData.forEach((npc) => {
     marker.bindPopup(popupContent, { autoPan: true, keepInView: true, closeButton: false, offset: L.point(0, -5) });
 });
 
-// [14] 사냥터 영역 및 마커 생성
+// [14] 사냥터 영역 및 마커 생성 (혈교도, 화검문, 흑운회 개별 팝업 좌표 복사 기능 구현)
 const huntingImageBounds = [[0, 0], [7300, 7300]]; 
 const huntingListContainer = document.getElementById('hunt-accordion-content');
 
@@ -567,12 +567,27 @@ huntingGrounds.forEach((area) => {
         `;
     }
 
+    // [특정 3대 사냥터 분기 처리 조립 완료]
+    const targetGrounds = ["혈교도", "화검문", "흑운회"];
+    let coordinateLayoutHtml = '';
+
+    if (targetGrounds.includes(area.name)) {
+        coordinateLayoutHtml = `
+            <div style="margin-bottom:4px; cursor:pointer;" onclick="copyCoords(${area.x}, ${area.y}, ${area.z})" title="클릭하면 인게임 좌표가 복사됩니다.">
+                <span style="font-weight:800; color:#e03131;">[좌표 복사]</span> 
+                <span style="text-decoration:underline; color:#000; font-weight:700;">${area.x}, ${area.y}, ${area.z} 📋</span>
+            </div>
+        `;
+    } else {
+        coordinateLayoutHtml = `<div style="margin-bottom:4px;"><span style="font-weight:800; color:#444;">[좌표]</span> ${area.x}, ${area.y}, ${area.z}</div>`;
+    }
+
     const popupContent = `
         <div style="text-align:center; min-width:220px; color:#000; padding: 5px; line-height: 1.4;">
             <div style="font-size:18px; font-weight:800; border-bottom:2px solid #333; padding-bottom:5px; margin-bottom:8px;">${area.name} (Lv.${area.lv})</div>
             <div style="text-align:left; font-size:12px;">
                 <div style="margin-bottom:4px;"><span style="font-weight:800; color:#007bff;">[몬스터]</span> ${area.monsters}</div>
-                <div style="margin-bottom:4px;"><span style="font-weight:800; color:#444;">[좌표]</span> ${area.x}, ${area.y}, ${area.z}</div>
+                ${coordinateLayoutHtml}
                 ${area.memo ? `<div style="margin-top:4px; color:#d00; font-weight:700; word-break:keep-all;">${area.memo}</div>` : ''}
                 ${photoHtml}
                 ${recordsHtml}
